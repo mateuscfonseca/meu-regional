@@ -18,6 +18,7 @@ export interface RepertoireItem {
   atualizado_em: string;
   // Campos de prática
   tonalidade: string | null;
+  tonalidade_modo: string | null;
   notas: string | null;
   tem_introducao: boolean;
   tem_tercas: boolean;
@@ -38,6 +39,7 @@ export interface CreateRepertoireItemInput {
   metadados?: Record<string, any>;
   // Campos de prática
   tonalidade?: string;
+  tonalidade_modo?: string;
   notas?: string;
   tem_introducao?: boolean;
   tem_tercas?: boolean;
@@ -56,6 +58,7 @@ export interface UpdateRepertoireItemInput {
   metadados?: Record<string, any>;
   // Campos de prática
   tonalidade?: string;
+  tonalidade_modo?: string;
   notas?: string;
   tem_introducao?: boolean;
   tem_tercas?: boolean;
@@ -145,9 +148,9 @@ export class RepertoireService {
     const result = db
       .prepare(`
         INSERT INTO repertoire_items (regional_id, nome, autor, descricao, links, metadados,
-          tonalidade, notas, tem_introducao, tem_tercas, tem_arranjo_6_cordas,
+          tonalidade, tonalidade_modo, notas, tem_introducao, tem_tercas, tem_arranjo_6_cordas,
           introducao_aprendida, tercas_aprendidas, arranjo_6_cordas_aprendido, nivel_fluencia)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .run(
         input.regional_id,
@@ -157,6 +160,7 @@ export class RepertoireService {
         input.links ? JSON.stringify(input.links) : null,
         input.metadados ? JSON.stringify(input.metadados) : null,
         input.tonalidade || null,
+        input.tonalidade_modo || null,
         input.notas || null,
         input.tem_introducao ? 1 : 0,
         input.tem_tercas ? 1 : 0,
@@ -207,6 +211,10 @@ export class RepertoireService {
     if (input.tonalidade !== undefined) {
       fields.push('tonalidade = ?');
       values.push(input.tonalidade);
+    }
+    if (input.tonalidade_modo !== undefined) {
+      fields.push('tonalidade_modo = ?');
+      values.push(input.tonalidade_modo);
     }
     if (input.notas !== undefined) {
       fields.push('notas = ?');

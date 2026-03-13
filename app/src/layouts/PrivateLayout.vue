@@ -53,7 +53,7 @@
     <div
       v-if="sidebarOpen"
       @click="sidebarOpen = false"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
     ></div>
 
     <!-- Main Content -->
@@ -139,6 +139,12 @@ async function handleLogStudy(data: {
   tipo: 'individual' | 'grupo'
   duracao_minutos?: number
   notas?: string
+  data?: string
+  nivel_fluencia?: string
+  introducao_aprendida?: boolean
+  tercas_aprendidas?: boolean
+  arranjo_6_cordas_aprendido?: boolean
+  notas_pessoais?: string
 }) {
   try {
     await logStudy(data)

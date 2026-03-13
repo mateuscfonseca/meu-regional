@@ -139,6 +139,20 @@ export function useRepertoire() {
   }
 
   /**
+   * Busca um item do repertório por ID
+   */
+  async function getMusicById(id: number): Promise<RepertoireItem | null> {
+    error.value = null
+
+    try {
+      const response = await api.get(`/repertoire/${id}`)
+      return response.data.item
+    } catch (err: any) {
+      return null
+    }
+  }
+
+  /**
    * Atualiza dados de proficiência do usuário para um item
    */
   async function updateMemberPracticeFields(
@@ -181,6 +195,7 @@ export function useRepertoire() {
     loadRepertoire,
     createItem,
     updateItem,
+    getMusicById,
     updateMemberPracticeFields,
     importList,
     deleteItem,

@@ -37,6 +37,31 @@
         </button>
       </div>
 
+      <!-- Busca Textual -->
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-gray-600 mb-2">
+          Buscar por nome ou autor
+        </label>
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            @input="debouncedSearch"
+            type="text"
+            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 pl-10 border"
+            placeholder="Buscar por nome, autor ou nível..."
+          />
+          <span class="mdi mdi-magnify absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></span>
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+          >
+            <span class="mdi mdi-close"></span>
+          </button>
+        </div>
+      </div>
+
       <!-- Filtros de Dias -->
       <div class="mb-4">
         <label class="block text-xs font-medium text-gray-600 mb-2">
@@ -297,6 +322,8 @@
       :loading="saving"
       @submit="handleEditMusic"
       @submit-continue="handleEditMusicContinue"
+      @navigate-previous="handleNavigatePrevious"
+      @navigate-next="handleNavigateNext"
     />
 
     <ImportListModal
@@ -349,10 +376,32 @@ const filters = ref<{
   nivel_fluencia: [],
 })
 
+// Estado da busca textual
+const searchQuery = ref('')
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
 // Computed para filtrar itens
 const filteredItems = computed(() => {
   let result = items.value
-  
+
+  // Filtro: busca textual (nome da música, autor ou nível)
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    result = result.filter(item => {
+      const nivelFluencia = item.member_data?.nivel_fluencia || 'precisa_aprender'
+      
+      // Busca por nome ou autor
+      const matchNomeAutor = 
+        item.nome.toLowerCase().includes(query) ||
+        (item.autor && item.autor.toLowerCase().includes(query))
+      
+      // Busca por nível de proficiência
+      const matchNivel = nivelFluencia.toLowerCase().includes(query)
+      
+      return matchNomeAutor || matchNivel
+    })
+  }
+
   // Filtro: nível de fluência
   if (filters.value.nivel_fluencia.length > 0) {
     result = result.filter(item => 
@@ -420,6 +469,7 @@ const niveisFluencia = [
 // Verifica se há filtros ativos
 const hasActiveFilters = computed(() => {
   return (
+    searchQuery.value.trim() !== '' ||
     filters.value.nao_praticadas_ha !== undefined ||
     filters.value.nivel_fluencia.length > 0 ||
     filters.value.tem_introducao !== undefined ||
@@ -430,6 +480,18 @@ const hasActiveFilters = computed(() => {
     filters.value.arranjo_6_cordas_aprendido !== undefined
   )
 })
+
+// Handlers de filtros
+function debouncedSearch() {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    // A busca é reativa via computed, não precisa fazer nada aqui
+  }, 300)
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+}
 
 // Handlers de filtros
 function toggleDaysFilter(days: number) {
@@ -458,6 +520,7 @@ function clearFilters() {
   filters.value = {
     nivel_fluencia: [],
   }
+  searchQuery.value = ''
 }
 
 // Handlers de UI
@@ -699,6 +762,22 @@ async function handleEditMusicContinue(data: {
   } finally {
     saving.value = false
     console.log('[handleEditMusicContinue] FIM')
+  }
+}
+
+// Handler para navegação anterior
+function handleNavigatePrevious() {
+  if (editingIndex.value > 0 && filteredItems.value.length > 0) {
+    editingIndex.value--
+    editingItem.value = filteredItems.value[editingIndex.value]
+  }
+}
+
+// Handler para navegação próxima
+function handleNavigateNext() {
+  if (editingIndex.value < filteredItems.value.length - 1 && filteredItems.value.length > 0) {
+    editingIndex.value++
+    editingItem.value = filteredItems.value[editingIndex.value]
   }
 }
 

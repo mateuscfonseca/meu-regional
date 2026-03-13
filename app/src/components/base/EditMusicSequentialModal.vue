@@ -24,19 +24,19 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Buscar no Spotify
         </label>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
             v-model="spotifySearchQuery"
             @input="debouncedSearch"
             @focus="showSearchResults = true"
             type="text"
-            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="Digite o nome da música..."
           />
           <button
             @click="searchSpotify"
             :disabled="searching"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors sm:w-auto w-full"
           >
             <span v-if="searching" class="animate-pulse">
               <span class="mdi mdi-magnify"></span>
@@ -70,17 +70,17 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Ou cole URL do Spotify
         </label>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
             v-model="spotifyUrl"
             type="url"
-            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="https://open.spotify.com/track/..."
           />
           <button
             @click="fetchSpotifyMetadata"
             :disabled="fetchingUrl"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap sm:w-auto w-full"
           >
             {{ fetchingUrl ? 'Extraindo...' : 'Preencher' }}
           </button>
@@ -124,12 +124,32 @@
               <label class="block text-sm font-medium text-gray-700">
                 Autor
               </label>
-              <input
-                v-model="form.autor"
-                type="text"
-                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
-                placeholder="Ex: Waldir Azevedo"
-              />
+              <div class="relative">
+                <input
+                  v-model="form.autor"
+                  @input="debouncedAuthorSearch"
+                  @focus="showAuthorSuggestions = true"
+                  @blur="hideAuthorSuggestions"
+                  type="text"
+                  class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+                  placeholder="Ex: Waldir Azevedo"
+                />
+                
+                <!-- Sugestões de autores -->
+                <div
+                  v-if="showAuthorSuggestions && authorSuggestions.length > 0"
+                  class="absolute z-20 w-full mt-1 border border-gray-200 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg"
+                >
+                  <div
+                    v-for="(suggestion, idx) in authorSuggestions"
+                    :key="idx"
+                    @click="selectAuthor(suggestion)"
+                    class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    {{ suggestion }}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -149,7 +169,45 @@
           </div>
         </div>
 
-        <!-- SEÇÃO 2: Caracterização da Música -->
+        <!-- SEÇÃO 2: Histórico de Estudos -->
+        <div class="border border-gray-200 rounded-lg p-4 bg-purple-50">
+          <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+            <span class="mdi mdi-history text-purple-600"></span>
+            Histórico de Estudos
+          </h4>
+          
+          <div v-if="studyLogs.length > 0" class="space-y-2 max-h-48 overflow-y-auto">
+            <div
+              v-for="log in studyLogs"
+              :key="log.id"
+              class="flex items-start gap-3 p-2 bg-white rounded-lg border border-gray-200"
+            >
+              <span
+                class="mdi w-5 h-5 flex-shrink-0 mt-0.5"
+                :class="log.tipo === 'individual' ? 'mdi-account text-blue-600' : 'mdi-account-group text-green-600'"
+              ></span>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-gray-900">
+                  {{ formatDate(log.data) }}
+                  <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                    {{ log.tipo === 'individual' ? 'Individual' : 'Em Grupo' }}
+                  </span>
+                </div>
+                <div class="text-sm text-gray-600">{{ log.membro_nome }}</div>
+                <div v-if="log.notas" class="text-sm text-gray-500 mt-1 italic">
+                  "{{ log.notas }}"
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-4">
+            <span class="mdi mdi-history-off text-gray-400 text-3xl"></span>
+            <p class="text-sm text-gray-500 mt-2">Nenhum estudo registrado para esta música</p>
+          </div>
+        </div>
+
+        <!-- SEÇÃO 3: Caracterização da Música -->
         <div class="border border-gray-200 rounded-lg p-4 bg-blue-50">
           <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
             <span class="mdi mdi-music text-blue-600"></span>
@@ -161,24 +219,38 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Tonalidade
             </label>
-            <select
-              v-model="form.tonalidade"
-              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
-            >
-              <option value="">Selecione...</option>
-              <option value="C">C (Dó)</option>
-              <option value="Db">Db (Dó#)</option>
-              <option value="D">D (Ré)</option>
-              <option value="Eb">Eb (Mi♭)</option>
-              <option value="E">E (Mi)</option>
-              <option value="F">F (Fá)</option>
-              <option value="Gb">Gb (Fá#)</option>
-              <option value="G">G (Sol)</option>
-              <option value="Ab">Ab (Lá♭)</option>
-              <option value="A">A (Lá)</option>
-              <option value="Bb">Bb (Si♭)</option>
-              <option value="B">B (Si)</option>
-            </select>
+            <div class="grid grid-cols-2 gap-2">
+              <select
+                v-model="form.tonalidade"
+                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+              >
+                <option value="">Nota...</option>
+                <option value="C">C (Dó)</option>
+                <option value="Db">Db (Dó#)</option>
+                <option value="D">D (Ré)</option>
+                <option value="Eb">Eb (Mi♭)</option>
+                <option value="E">E (Mi)</option>
+                <option value="F">F (Fá)</option>
+                <option value="Gb">Gb (Fá#)</option>
+                <option value="G">G (Sol)</option>
+                <option value="Ab">Ab (Lá♭)</option>
+                <option value="A">A (Lá)</option>
+                <option value="Bb">Bb (Si♭)</option>
+                <option value="B">B (Si)</option>
+              </select>
+              
+              <select
+                v-model="form.tonalidade_modo"
+                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+              >
+                <option value="">Modo...</option>
+                <option value="maior">Maior</option>
+                <option value="menor">Menor</option>
+              </select>
+            </div>
+            <p v-if="form.tonalidade && form.tonalidade_modo" class="text-xs text-gray-500 mt-1">
+              Resultado: {{ form.tonalidade }} {{ form.tonalidade_modo }}
+            </p>
           </div>
 
           <!-- Notas/Arranjo -->
@@ -236,7 +308,7 @@
           </div>
         </div>
 
-        <!-- SEÇÃO 3: Dados do Usuário Logado -->
+        <!-- SEÇÃO 4: Dados do Usuário Logado -->
         <div class="border border-gray-200 rounded-lg p-4 bg-green-50">
           <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
             <span class="mdi mdi-account text-green-600"></span>
@@ -322,25 +394,55 @@
 
     <!-- Footer com ações -->
     <template #footer>
-      <button
-        @click="handleSubmitAndClose"
-        :disabled="loading || !form.nome"
-        class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors inline-flex items-center gap-2"
-      >
-        <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
-        <span v-else class="mdi mdi-content-save-check"></span>
-        {{ loading ? 'Salvando...' : 'Salvar e Fechar' }}
-      </button>
-      <button
-        @click="handleSubmitAndContinue"
-        :disabled="loading || !form.nome"
-        type="button"
-        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
-      >
-        <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
-        <span v-else class="mdi mdi-content-save-move"></span>
-        {{ loading ? 'Salvando...' : 'Salvar e Continuar' }}
-      </button>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+        <!-- Navegação -->
+        <div v-if="showProgress" class="flex gap-2 flex-shrink-0">
+          <button
+            type="button"
+            @click="$emit('navigate-previous')"
+            :disabled="!currentIndex || currentIndex <= 1"
+            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1 flex-shrink-0"
+          >
+            <span class="mdi mdi-chevron-left"></span>
+            <span class="hidden sm:inline">Anterior</span>
+          </button>
+          <button
+            type="button"
+            @click="$emit('navigate-next')"
+            :disabled="!currentIndex || currentIndex >= totalItems"
+            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1 flex-shrink-0"
+          >
+            <span class="hidden sm:inline">Próximo</span>
+            <span class="mdi mdi-chevron-right"></span>
+          </button>
+        </div>
+
+        <!-- Ações de salvar -->
+        <div class="flex gap-2 flex-shrink-0">
+          <button
+            type="button"
+            @click="handleSubmitAndClose"
+            :disabled="loading || !form.nome"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 flex-shrink-0"
+          >
+            <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
+            <span v-else class="mdi mdi-content-save-check"></span>
+            <span class="hidden sm:inline">{{ loading ? 'Salvando...' : 'Salvar e Fechar' }}</span>
+            <span class="sm:hidden">Salvar</span>
+          </button>
+          <button
+            @click="handleSubmitAndContinue"
+            :disabled="loading || !form.nome"
+            type="button"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 flex-shrink-0"
+          >
+            <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
+            <span v-else class="mdi mdi-content-save-move"></span>
+            <span class="hidden sm:inline">{{ loading ? 'Salvando...' : 'Salvar e Continuar' }}</span>
+            <span class="sm:hidden">Continuar</span>
+          </button>
+        </div>
+      </div>
     </template>
   </BaseModal>
 </template>
@@ -349,6 +451,8 @@
 import { ref, watch, computed } from 'vue'
 import BaseModal from './BaseModal.vue'
 import { useScraper, type ScrapedMetadata } from '../../services/scraper'
+import { useStudyLogs, type StudyLog } from '../../composables/useStudyLogs'
+import { useAuthors } from '../../services/authors'
 import type { RepertoireItem } from '../../composables/useRepertoire'
 
 interface Props {
@@ -375,6 +479,7 @@ const emit = defineEmits<{
     links?: string[]
     // Dados gerais (caracterização)
     tonalidade?: string
+    tonalidade_modo?: string
     notas?: string
     tem_introducao?: boolean
     tem_tercas?: boolean
@@ -393,6 +498,7 @@ const emit = defineEmits<{
     links?: string[]
     // Dados gerais (caracterização)
     tonalidade?: string
+    tonalidade_modo?: string
     notas?: string
     tem_introducao?: boolean
     tem_tercas?: boolean
@@ -404,9 +510,15 @@ const emit = defineEmits<{
     nivel_fluencia?: string
     notas_pessoais?: string
   }]
+  'navigate-previous': []
+  'navigate-next': []
 }>()
 
 const { search: searchSpotifyApi, getMetadataByUrl } = useScraper()
+const { findByRepertoire, formatDate } = useStudyLogs()
+const { getSuggestions: getAuthorSuggestions } = useAuthors()
+
+const studyLogs = ref<StudyLog[]>([])
 
 const form = ref({
   nome: '',
@@ -414,6 +526,7 @@ const form = ref({
   links: '',
   // Campos de caracterização (gerais)
   tonalidade: '',
+  tonalidade_modo: '',
   notas: '',
   tem_introducao: false,
   tem_tercas: false,
@@ -425,6 +538,12 @@ const form = ref({
   nivel_fluencia: '',
   notas_pessoais: '',
 })
+
+// Estados para autocomplete de autores
+const authorSuggestions = ref<string[]>([])
+const showAuthorSuggestions = ref(false)
+const searchingAuthors = ref(false)
+let authorSearchTimeout: ReturnType<typeof setTimeout> | null = null
 
 const spotifySearchQuery = ref('')
 const spotifyResults = ref<ScrapedMetadata[]>([])
@@ -455,13 +574,14 @@ watch(() => props.modelValue, (val) => {
   isOpen.value = val
 })
 
-watch(() => props.item, (item) => {
+watch(() => props.item, async (item) => {
   if (item) {
     form.value = {
       nome: item.nome,
       autor: item.autor || '',
       links: Array.isArray(item.links) ? item.links.join(', ') : (item.links || ''),
       tonalidade: item.tonalidade || '',
+      tonalidade_modo: (item as any).tonalidade_modo || '',
       notas: item.notas || '',
       tem_introducao: Boolean(item.tem_introducao),
       tem_tercas: Boolean(item.tem_tercas),
@@ -474,6 +594,12 @@ watch(() => props.item, (item) => {
     }
     // Auto-preencher busca Spotify com o nome da música
     spotifySearchQuery.value = item.nome
+    
+    // Resetar autocompletes ao mudar de item
+    clearAutocompletes()
+    
+    // Carregar histórico de estudos
+    await loadStudyLogs(item.id)
   }
 }, { immediate: true })
 
@@ -490,6 +616,7 @@ function resetForm() {
     autor: '',
     links: '',
     tonalidade: '',
+    tonalidade_modo: '',
     notas: '',
     tem_introducao: false,
     tem_tercas: false,
@@ -505,6 +632,68 @@ function resetForm() {
   spotifyResults.value = []
   showSearchResults.value = false
   loading.value = false
+  studyLogs.value = []
+  authorSuggestions.value = []
+  showAuthorSuggestions.value = false
+}
+
+function clearAutocompletes() {
+  // Spotify
+  spotifyResults.value = []
+  showSearchResults.value = false
+  
+  // Autor
+  authorSuggestions.value = []
+  showAuthorSuggestions.value = false
+}
+
+async function loadStudyLogs(repertoireItemId: number) {
+  try {
+    studyLogs.value = await findByRepertoire(repertoireItemId)
+  } catch (error: any) {
+    console.error('Erro ao carregar histórico de estudos:', error)
+    studyLogs.value = []
+  }
+}
+
+function debouncedAuthorSearch() {
+  if (authorSearchTimeout) clearTimeout(authorSearchTimeout)
+  
+  if (form.value.autor.length < 2) {
+    authorSuggestions.value = []
+    return
+  }
+  
+  authorSearchTimeout = setTimeout(() => {
+    searchAuthors()
+  }, 300)
+}
+
+async function searchAuthors() {
+  if (form.value.autor.length < 2) return
+  
+  searchingAuthors.value = true
+  showAuthorSuggestions.value = true
+  
+  try {
+    authorSuggestions.value = await getAuthorSuggestions(form.value.autor, 10)
+  } catch (error: any) {
+    console.error('Erro na busca de autores:', error)
+  } finally {
+    searchingAuthors.value = false
+  }
+}
+
+function selectAuthor(author: string) {
+  form.value.autor = author
+  authorSuggestions.value = []
+  showAuthorSuggestions.value = false
+}
+
+function hideAuthorSuggestions() {
+  setTimeout(() => {
+    showAuthorSuggestions.value = false
+  }, 200)
 }
 
 function handleClose() {
@@ -579,6 +768,7 @@ function prepareData() {
     links: links.length > 0 ? links : undefined,
     // Dados gerais (caracterização)
     tonalidade: form.value.tonalidade || undefined,
+    tonalidade_modo: form.value.tonalidade_modo || undefined,
     notas: form.value.notas || undefined,
     tem_introducao: form.value.tem_introducao,
     tem_tercas: form.value.tem_tercas,
@@ -601,6 +791,7 @@ function handleSubmitAndContinue() {
 
   try {
     emit('submit-continue', data)
+    clearAutocompletes()
   } finally {
     loading.value = false
   }
@@ -615,6 +806,7 @@ function handleSubmitAndClose() {
 
   try {
     emit('submit', data)
+    clearAutocompletes()
   } finally {
     loading.value = false
   }

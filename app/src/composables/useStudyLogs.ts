@@ -8,9 +8,11 @@ export interface StudyLog {
   tipo: 'individual' | 'grupo'
   duracao_minutos: number | null
   notas: string | null
+  data: string
   estudado_em: string
   musica_nome?: string
   autor?: string
+  membro_nome?: string
 }
 
 export interface StudyStats {
@@ -64,18 +66,19 @@ export function useStudyLogs() {
     tipo: 'individual' | 'grupo'
     duracao_minutos?: number
     notas?: string
+    data?: string
   }) {
     error.value = null
-    
+
     try {
       const response = await api.post('/study-logs', data)
       logs.value.unshift(response.data.log)
-      
+
       // Atualizar stats se existirem
       if (stats.value) {
         await loadStats(data.member_id)
       }
-      
+
       return response.data.log
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Erro ao registrar estudo'
@@ -83,7 +86,29 @@ export function useStudyLogs() {
     }
   }
 
-  function formatDate(dateStr: string) {
+  async function findByRepertoire(repertoireItemId: number) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await api.get(`/study-logs/repertoire/${repertoireItemId}`)
+      return response.data.logs
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao carregar histórico'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function formatDate(dateStr: string, includeTime: boolean = true) {
+    if (!includeTime) {
+      return new Date(dateStr).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+    }
     return new Date(dateStr).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -101,6 +126,7 @@ export function useStudyLogs() {
     loadLogs,
     loadStats,
     logStudy,
+    findByRepertoire,
     formatDate
   }
 }

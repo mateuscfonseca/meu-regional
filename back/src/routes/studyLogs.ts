@@ -8,6 +8,7 @@ const studyLogSchema = z.object({
   tipo: z.enum(['individual', 'grupo']),
   duracao_minutos: z.number().optional(),
   notas: z.string().optional(),
+  data: z.string().optional(),
 });
 
 export const studyLogsRoutes = new Hono();

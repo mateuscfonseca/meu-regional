@@ -31,32 +31,55 @@ Sistema de gestão de repertório para regionais musicais.
 
 ## 📦 Como Rodar
 
-### Desenvolvimento com Docker (Recomendado)
+### Produção com Docker (Recomendado)
 
 ```bash
-# Construir e iniciar todos os containers
-docker-compose up --build
+# Copiar arquivo de ambiente
+cp .env.example .env
+# Editar .env com suas credenciais
 
-# Backend: http://localhost:3000
-# Frontend: http://localhost:5173
-# Scraper:   http://localhost:4000
+# Rodar deploy
+./deploy.sh deploy
+```
+
+**Acesso:**
+- Frontend: http://localhost:7000
+- Domínio: https://meureg.mateusfonseca.me
+- Backend e Scraper: rede interna (não expostos)
+
+**Comandos disponíveis:**
+```bash
+./deploy.sh deploy    # Deploy completo
+./deploy.sh restart   # Reinicia containers
+./deploy.sh stop      # Para containers
+./deploy.sh logs      # Logs em tempo real
+./deploy.sh status    # Status dos containers
 ```
 
 ### Arquitetura de Containers
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   Frontend      │     │   Backend       │
-│   (Vue 3)       │────▶│   (Hono/Bun)    │
-│   port 5173     │     │   port 3000     │
-└─────────────────┘     └────────┬────────┘
-                                 │ HTTP
-                                 ▼
-                        ┌─────────────────┐
-                        │   Scraper       │
-                        │   (Playwright)  │
-                        │   port 4000     │
-                        └─────────────────┘
+┌─────────────────────────────────────────┐
+│   Frontend (Caddy + Vue 3 build)        │
+│   port 7000                             │
+│  ┌─────────────────────────────────┐    │
+│  │  Caddy                          │    │
+│  │  - Serve estático               │    │
+│  │  - Proxy /api/* → backend:3000  │    │
+│  └─────────────────────────────────┘    │
+└─────────────────┬───────────────────────┘
+                  │ HTTP (rede interna)
+                  ▼
+┌─────────────────────────────────────────┐
+│   Backend (Hono/Bun)                    │
+│   port 3000 (interno)                   │
+└─────────────────┬───────────────────────┘
+                  │ HTTP (rede interna)
+                  ▼
+┌─────────────────────────────────────────┐
+│   Scraper (Playwright)                  │
+│   port 4000 (interno)                   │
+└─────────────────────────────────────────┘
 ```
 
 ### Desenvolvimento Local
@@ -74,6 +97,39 @@ cd app
 bun install
 bun run dev           # http://localhost:5173
 ```
+
+### Deploy em Produção
+
+No seu servidor, configure o Caddy externo para fazer proxy reverso:
+
+**Caddyfile do servidor:**
+```caddy
+meureg.mateusfonseca.me {
+    reverse_proxy localhost:7000
+}
+```
+
+**Primeiro deploy:**
+```bash
+# Clonar repositório
+git clone <repo> meu-regional
+cd meu-regional
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env com JWT_SECRET e credenciais Spotify
+
+# Rodar deploy
+./deploy.sh deploy
+```
+
+**Deploys seguintes:**
+```bash
+# Apenas rodar o script (pull + build + deploy)
+./deploy.sh deploy
+```
+
+O script usa `rsync` para sincronizar arquivos para `~/deploys/meu-regional`, preservando o `.env` configurado.
 
 ## 📁 Estrutura do Projeto
 
@@ -95,11 +151,14 @@ meu-regional/
 │   │   ├── composables/        # Lógica reutilizável
 │   │   ├── services/           # API clients
 │   │   └── router/             # Rotas
+│   ├── Caddyfile               # Configuração do Caddy
 │   ├── README.md               # Docs do frontend
 │   └── Dockerfile
 ├── docs/
 │   └── spotify-scraping.md     # Docs do scraping
+├── deploy.sh                   # Script de deploy
 ├── docker-compose.yml
+├── .env.example
 └── README.md
 ```
 
@@ -298,6 +357,17 @@ SCRAPER_HEADLESS=true
 **Frontend (.env):**
 ```env
 VITE_API_URL=http://localhost:3000
+```
+
+**Produção (.env):**
+```env
+JWT_SECRET=chave-secreta-forte  # Gerar com: openssl rand -base64 32
+DATABASE_PATH=/app/data/meu-regional.db
+NODE_ENV=production
+SCRAPER_API_URL=http://scraper:4000
+SPOTIFY_EMAIL=seu-email@exemplo.com
+SPOTIFY_PASSWORD=sua-senha
+SCRAPER_HEADLESS=true
 ```
 
 ## 📝 Licença

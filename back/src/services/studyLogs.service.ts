@@ -13,9 +13,11 @@ export interface StudyLog {
   tipo: 'individual' | 'grupo';
   duracao_minutos: number | null;
   notas: string | null;
+  data: string;
   estudado_em: string;
   musica_nome: string;
   autor: string | null;
+  membro_nome?: string;
 }
 
 export interface StudyStats {
@@ -31,6 +33,7 @@ export interface CreateStudyLogInput {
   tipo: 'individual' | 'grupo';
   duracao_minutos?: number;
   notas?: string;
+  data?: string;
 }
 
 export class StudyLogsService {
@@ -62,11 +65,12 @@ export class StudyLogsService {
   async findByRepertoire(repertoireId: number, limit: number = 100): Promise<StudyLog[]> {
     return this.db
       .prepare(`
-        SELECT sl.*, m.nome as membro_nome
+        SELECT sl.*, m.nome as membro_nome, r.nome as musica_nome, r.autor
         FROM study_logs sl
         JOIN members m ON sl.member_id = m.id
+        JOIN repertoire_items r ON sl.repertoire_item_id = r.id
         WHERE sl.repertoire_item_id = ?
-        ORDER BY sl.estudado_em DESC
+        ORDER BY sl.data DESC, sl.estudado_em DESC
         LIMIT ?
       `)
       .all(repertoireId, limit) as StudyLog[];
@@ -78,15 +82,16 @@ export class StudyLogsService {
   async create(input: CreateStudyLogInput): Promise<StudyLog> {
     const result = this.db
       .prepare(`
-        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
       .run(
         input.member_id,
         input.repertoire_item_id,
         input.tipo,
         input.duracao_minutos || null,
-        input.notas || null
+        input.notas || null,
+        input.data || new Date().toISOString().split('T')[0]
       );
 
     const log = this.db

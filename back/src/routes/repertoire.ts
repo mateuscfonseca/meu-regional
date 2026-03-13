@@ -13,6 +13,7 @@ const createRepertoireSchema = z.object({
   metadados: z.record(z.any()).optional(),
   // Campos de prática GERAIS (caracterização da música)
   tonalidade: z.string().optional(),
+  tonalidade_modo: z.string().optional(),
   notas: z.string().optional(),
   tem_introducao: z.boolean().optional(),
   tem_tercas: z.boolean().optional(),
@@ -48,6 +49,7 @@ const updateRepertoireSchema = z.object({
   metadados: z.record(z.any()).optional(),
   // Campos de prática GERAIS (caracterização da música)
   tonalidade: z.string().optional(),
+  tonalidade_modo: z.string().optional(),
   notas: z.string().optional(),
   tem_introducao: z.boolean().optional(),
   tem_tercas: z.boolean().optional(),
@@ -92,9 +94,9 @@ repertoireRoutes.get('/regional/:regionalId', async (c) => {
 
   // Query simples - JOIN para trazer member_data
   let sql = `
-    SELECT 
+    SELECT
       ri.id, ri.regional_id, ri.nome, ri.autor, ri.descricao, ri.links, ri.metadados,
-      ri.tonalidade, ri.notas,
+      ri.tonalidade, ri.tonalidade_modo, ri.notas,
       ri.tem_introducao, ri.tem_tercas, ri.tem_arranjo_6_cordas,
       ri.criado_em, ri.atualizado_em,
       COALESCE(mr.nivel_fluencia, 'precisa_aprender') as nivel_fluencia,
@@ -109,8 +111,8 @@ repertoireRoutes.get('/regional/:regionalId', async (c) => {
           AND sl.member_id = ?
       ) as ultima_pratica
     FROM repertoire_items ri
-    LEFT JOIN member_repertoire mr 
-      ON mr.repertoire_item_id = ri.id 
+    LEFT JOIN member_repertoire mr
+      ON mr.repertoire_item_id = ri.id
       AND mr.member_id = ?
     WHERE ri.regional_id = ?
     ORDER BY ri.nome ASC
@@ -130,6 +132,7 @@ repertoireRoutes.get('/regional/:regionalId', async (c) => {
       links: row.links ? (typeof row.links === 'string' ? JSON.parse(row.links) : row.links) : null,
       metadados: row.metadados ? (typeof row.metadados === 'string' ? JSON.parse(row.metadados) : row.metadados) : null,
       tonalidade: row.tonalidade,
+      tonalidade_modo: row.tonalidade_modo,
       notas: row.notas,
       tem_introducao: Boolean(row.tem_introducao),
       tem_tercas: Boolean(row.tem_tercas),

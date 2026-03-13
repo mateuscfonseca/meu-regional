@@ -1,6 +1,6 @@
 /**
  * Registry de Migrations
- * 
+ *
  * Centraliza o registro de todas as migrations
  */
 
@@ -8,6 +8,7 @@ import type { Migration } from './migration-manager';
 import * as migration001 from './migrations/001-initial-schema';
 import * as migration004 from './migrations/004-add-practice-fields';
 import * as migration005 from './migrations/005-member-repertoire-and-practice-logs';
+import * as migration006 from './migrations/006-study-logs-data-and-tonalidade-modo';
 
 export const migrations: Migration[] = [
   {
@@ -27,5 +28,11 @@ export const migrations: Migration[] = [
     name: '005-add-member-repertoire-fields',
     up: migration005.up,
     down: migration005.down,
+  },
+  {
+    id: 4,
+    name: '006-study-logs-data-and-tonalidade-modo',
+    up: migration006.up,
+    down: migration006.down,
   }
 ];

@@ -1,5 +1,22 @@
 services:
   # ===========================================
+  # Frontend (Caddy + Vue 3 build)
+  # ===========================================
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: meu-regional-frontend
+    ports:
+      - "7000:7000"
+    environment:
+      - NODE_ENV=production
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ===========================================
   # Backend API
   # ===========================================
   backend:
@@ -11,39 +28,17 @@ services:
     volumes:
       - ./back:/app
       - backend_data:/app/data
-    ports:
-      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - JWT_SECRET=meu-regional-secret-key-change-in-production
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-change-in-production}
       - DATABASE_PATH=/app/data/meu-regional.db
-      # Scraper API (container separado)
       - SCRAPER_API_URL=http://scraper:4000
-      # Spotify credentials (opcional, usado pelo scraper)
       - SPOTIFY_EMAIL=${SPOTIFY_EMAIL:-}
       - SPOTIFY_PASSWORD=${SPOTIFY_PASSWORD:-}
     command: bun run dev
     depends_on:
       - scraper
-
-  # ===========================================
-  # Frontend
-  # ===========================================
-  frontend:
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-    container_name: meu-regional-frontend
-    working_dir: /app
-    volumes:
-      - ./app:/app
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:3000
-    command: bun run dev
-    depends_on:
-      - backend
+    restart: unless-stopped
 
   # ===========================================
   # Scraper Service (Web Scraping Isolado)
@@ -54,29 +49,25 @@ services:
       dockerfile: Dockerfile
     container_name: meu-regional-scraper
     working_dir: /app
-    ports:
-      - "4000:4000"
     environment:
       - NODE_ENV=production
       - HEADLESS=true
       - PORT=4000
-      # Spotify credentials para login
       - SPOTIFY_EMAIL=${SPOTIFY_EMAIL:-}
       - SPOTIFY_PASSWORD=${SPOTIFY_PASSWORD:-}
-    # Recursos limitados para não consumir toda a memória
     deploy:
       resources:
         limits:
           memory: 512M
         reservations:
           memory: 256M
-    # Health check para verificar se o browser está ativo
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
 
 volumes:
   backend_data:

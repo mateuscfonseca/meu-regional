@@ -1,0 +1,18 @@
+:7000 {
+    root * /srv
+    file_server
+    
+    @api {
+        path /api/*
+    }
+    handle @api {
+        reverse_proxy backend:3000
+    }
+    
+    @scraper {
+        path /scraper/*
+    }
+    handle @scraper {
+        reverse_proxy scraper:4000
+    }
+}

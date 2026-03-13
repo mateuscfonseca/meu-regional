@@ -11,19 +11,19 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Buscar no Spotify
         </label>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
             v-model="spotifySearchQuery"
             @input="debouncedSearch"
             @focus="showSearchResults = true"
             type="text"
-            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="Digite o nome da música..."
           />
           <button
             @click="searchSpotify"
             :disabled="searching"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors sm:w-auto w-full"
           >
             <span v-if="searching" class="animate-pulse">🔍</span>
             <span v-else>🔍</span>
@@ -53,17 +53,17 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Ou cole URL do Spotify
         </label>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
             v-model="spotifyUrl"
             type="url"
-            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="https://open.spotify.com/track/..."
           />
           <button
             @click="fetchSpotifyMetadata"
             :disabled="fetchingUrl"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap sm:w-auto w-full"
           >
             {{ fetchingUrl ? 'Extraindo...' : 'Preencher' }}
           </button>
@@ -99,12 +99,70 @@
           <label class="block text-sm font-medium text-gray-700">
             Autor
           </label>
-          <input
-            v-model="form.autor"
-            type="text"
-            class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
-            placeholder="Ex: Waldir Azevedo"
-          />
+          <div class="relative">
+            <input
+              v-model="form.autor"
+              @input="debouncedAuthorSearch"
+              @focus="showAuthorSuggestions = true"
+              @blur="hideAuthorSuggestions"
+              type="text"
+              class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+              placeholder="Ex: Waldir Azevedo"
+            />
+            
+            <!-- Sugestões de autores -->
+            <div
+              v-if="showAuthorSuggestions && authorSuggestions.length > 0"
+              class="absolute z-20 w-full mt-1 border border-gray-200 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg"
+            >
+              <div
+                v-for="(suggestion, idx) in authorSuggestions"
+                :key="idx"
+                @click="selectAuthor(suggestion)"
+                class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+              >
+                {{ suggestion }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Tonalidade
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <select
+              v-model="form.tonalidade"
+              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            >
+              <option value="">Nota...</option>
+              <option value="C">C (Dó)</option>
+              <option value="Db">Db (Dó#)</option>
+              <option value="D">D (Ré)</option>
+              <option value="Eb">Eb (Mi♭)</option>
+              <option value="E">E (Mi)</option>
+              <option value="F">F (Fá)</option>
+              <option value="Gb">Gb (Fá#)</option>
+              <option value="G">G (Sol)</option>
+              <option value="Ab">Ab (Lá♭)</option>
+              <option value="A">A (Lá)</option>
+              <option value="Bb">Bb (Si♭)</option>
+              <option value="B">B (Si)</option>
+            </select>
+            
+            <select
+              v-model="form.tonalidade_modo"
+              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            >
+              <option value="">Modo...</option>
+              <option value="maior">Maior</option>
+              <option value="menor">Menor</option>
+            </select>
+          </div>
+          <p v-if="form.tonalidade && form.tonalidade_modo" class="text-xs text-gray-500 mt-1">
+            Resultado: {{ form.tonalidade }} {{ form.tonalidade_modo }}
+          </p>
         </div>
 
         <div>
@@ -147,6 +205,7 @@
 import { ref, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
 import { useScraper, type ScrapedMetadata } from '../../services/scraper'
+import { useAuthors } from '../../services/authors'
 import type { RepertoireItem } from '../../composables/useRepertoire'
 
 interface Props {
@@ -159,15 +218,25 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'submit': [data: { id: number; nome: string; autor?: string; links?: string[] }]
+  'submit': [data: {
+    id: number
+    nome: string
+    autor?: string
+    links?: string[]
+    tonalidade?: string
+    tonalidade_modo?: string
+  }]
 }>()
 
 const { search: searchSpotifyApi, getMetadataByUrl } = useScraper()
+const { getSuggestions: getAuthorSuggestions } = useAuthors()
 
 const form = ref({
   nome: '',
   autor: '',
   links: '',
+  tonalidade: '',
+  tonalidade_modo: '',
 })
 
 const spotifySearchQuery = ref('')
@@ -178,7 +247,11 @@ const fetchingUrl = ref(false)
 const showSearchResults = ref(false)
 const loading = ref(false)
 
-let searchTimeout: ReturnType<typeof setTimeout> | null = null
+// Estados para autocomplete de autores
+const authorSuggestions = ref<string[]>([])
+const showAuthorSuggestions = ref(false)
+const searchingAuthors = ref(false)
+let authorSearchTimeout: ReturnType<typeof setTimeout> | null = null
 
 const isOpen = ref(props.modelValue)
 
@@ -192,6 +265,8 @@ watch(() => props.item, (item) => {
       nome: item.nome,
       autor: item.autor || '',
       links: Array.isArray(item.links) ? item.links.join(', ') : (item.links || ''),
+      tonalidade: (item as any).tonalidade || '',
+      tonalidade_modo: (item as any).tonalidade_modo || '',
     }
   }
 }, { immediate: true })
@@ -209,10 +284,52 @@ function resetForm() {
   spotifyResults.value = []
   showSearchResults.value = false
   loading.value = false
+  authorSuggestions.value = []
+  showAuthorSuggestions.value = false
 }
 
 function handleClose() {
   isOpen.value = false
+}
+
+function debouncedAuthorSearch() {
+  if (authorSearchTimeout) clearTimeout(authorSearchTimeout)
+  
+  if (form.value.autor.length < 2) {
+    authorSuggestions.value = []
+    return
+  }
+  
+  authorSearchTimeout = setTimeout(() => {
+    searchAuthors()
+  }, 300)
+}
+
+async function searchAuthors() {
+  if (form.value.autor.length < 2) return
+  
+  searchingAuthors.value = true
+  showAuthorSuggestions.value = true
+  
+  try {
+    authorSuggestions.value = await getAuthorSuggestions(form.value.autor, 10)
+  } catch (error: any) {
+    console.error('Erro na busca de autores:', error)
+  } finally {
+    searchingAuthors.value = false
+  }
+}
+
+function selectAuthor(author: string) {
+  form.value.autor = author
+  authorSuggestions.value = []
+  showAuthorSuggestions.value = false
+}
+
+function hideAuthorSuggestions() {
+  setTimeout(() => {
+    showAuthorSuggestions.value = false
+  }, 200)
 }
 
 function debouncedSearch() {
@@ -246,6 +363,16 @@ async function searchSpotify() {
 function selectSpotifyResult(result: ScrapedMetadata) {
   form.value.nome = result.nome
   form.value.autor = result.autor
+  
+  // Adicionar URL do Spotify aos links se disponível
+  if (result.url) {
+    const links = form.value.links ? form.value.links.split(',').map((l: string) => l.trim()) : []
+    if (!links.includes(result.url)) {
+      links.push(result.url)
+      form.value.links = links.join(', ')
+    }
+  }
+  
   spotifyResults.value = []
   spotifySearchQuery.value = result.nome
   showSearchResults.value = false
@@ -261,6 +388,13 @@ async function fetchSpotifyMetadata() {
     if (metadata) {
       form.value.nome = metadata.nome
       form.value.autor = metadata.autor
+      
+      // Adicionar URL aos links se ainda não existir
+      const links = form.value.links ? form.value.links.split(',').map((l: string) => l.trim()) : []
+      if (!links.includes(spotifyUrl.value)) {
+        links.push(spotifyUrl.value)
+        form.value.links = links.join(', ')
+      }
     }
   } catch (error: any) {
     console.error('Erro ao extrair metadata:', error)
@@ -284,6 +418,8 @@ async function handleSubmit() {
       nome: form.value.nome,
       autor: form.value.autor || undefined,
       links: links.length > 0 ? links : undefined,
+      tonalidade: form.value.tonalidade || undefined,
+      tonalidade_modo: form.value.tonalidade_modo || undefined,
     })
   } finally {
     loading.value = false
