@@ -1,0 +1,106 @@
+import { ref, readonly } from 'vue'
+import api from '../services/api'
+
+export interface StudyLog {
+  id: number
+  member_id: number
+  repertoire_item_id: number
+  tipo: 'individual' | 'grupo'
+  duracao_minutos: number | null
+  notas: string | null
+  estudado_em: string
+  musica_nome?: string
+  autor?: string
+}
+
+export interface StudyStats {
+  total_estudos: number
+  tempo_total_minutos: number
+  estudos_por_tipo: { tipo: string; total: number }[]
+  musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[]
+}
+
+const logs = ref<StudyLog[]>([])
+const stats = ref<StudyStats | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
+
+export function useStudyLogs() {
+  async function loadLogs(memberId: number) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const response = await api.get(`/study-logs/member/${memberId}`)
+      logs.value = response.data.logs
+      return logs.value
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao carregar histórico'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadStats(memberId: number) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const response = await api.get(`/study-logs/member/${memberId}/stats`)
+      stats.value = response.data
+      return response.data
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao carregar estatísticas'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function logStudy(data: {
+    member_id: number
+    repertoire_item_id: number
+    tipo: 'individual' | 'grupo'
+    duracao_minutos?: number
+    notas?: string
+  }) {
+    error.value = null
+    
+    try {
+      const response = await api.post('/study-logs', data)
+      logs.value.unshift(response.data.log)
+      
+      // Atualizar stats se existirem
+      if (stats.value) {
+        await loadStats(data.member_id)
+      }
+      
+      return response.data.log
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao registrar estudo'
+      throw err
+    }
+  }
+
+  function formatDate(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  return {
+    logs: readonly(logs),
+    stats: readonly(stats),
+    loading: readonly(loading),
+    error: readonly(error),
+    loadLogs,
+    loadStats,
+    logStudy,
+    formatDate
+  }
+}

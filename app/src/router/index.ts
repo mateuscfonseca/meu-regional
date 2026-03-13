@@ -1,0 +1,92 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/',
+      component: () => import('../layouts/PublicLayout.vue'),
+      children: [
+        {
+          path: '',
+          redirect: '/login'
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: () => import('../views/LoginView.vue')
+        },
+        {
+          path: 'register',
+          name: 'register',
+          component: () => import('../views/RegisterView.vue')
+        }
+      ]
+    },
+    {
+      path: '/',
+      component: () => import('../layouts/PrivateLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'dashboard',
+          component: () => import('../views/DashboardView.vue')
+        },
+        {
+          path: 'repertoire',
+          name: 'repertoire',
+          component: () => import('../views/RepertoireView.vue')
+        },
+        {
+          path: 'selections',
+          name: 'selections',
+          component: () => import('../views/SelectionsView.vue')
+        },
+        {
+          path: 'selections/:id',
+          name: 'selection-detail',
+          component: () => import('../views/SelectionDetailView.vue')
+        },
+        {
+          path: 'study',
+          name: 'study',
+          component: () => import('../views/StudyView.vue')
+        },
+        {
+          path: 'members',
+          name: 'members',
+          component: () => import('../views/MembersView.vue')
+        },
+        {
+          path: 'settings/spotify',
+          name: 'settings-spotify',
+          component: () => import('../views/SettingsSpotifyView.vue')
+        }
+      ]
+    }
+  ]
+})
+
+// Guarda de navegação - aguarda autenticação ser verificada
+router.beforeEach((to, from, next) => {
+  const auth = useAuth()
+  
+  // Aguarda a autenticação ser verificada antes de decidir
+  if (auth.state.loading) {
+    next()
+    return
+  }
+  
+  // Rotas protegidas requerem autenticação
+  if (to.meta.requiresAuth && !auth.isAuthenticated()) {
+    next('/login')
+  } else if ((to.path === '/login' || to.path === '/register') && auth.isAuthenticated()) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+})
+
+export default router

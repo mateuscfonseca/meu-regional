@@ -1,0 +1,29 @@
+{
+  "name": "meu-regional-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "migrate": "bun run src/migrate.ts run",
+    "migrate:rollback": "bun run src/migrate.ts rollback",
+    "migrate:list": "bun run src/migrate.ts list",
+    "test": "bun test src/test"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.7.0",
+    "hono": "^4.6.16",
+    "jsonwebtoken": "^9.0.2",
+    "playwright": "^1.58.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bun": "^1.1.14",
+    "typescript": "^5.7.2"
+  }
+}

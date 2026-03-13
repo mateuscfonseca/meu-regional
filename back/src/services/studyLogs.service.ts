@@ -1,0 +1,155 @@
+/**
+ * Study Logs Service - Lógica de negócio de estudos
+ * 
+ * Encapsula toda a lógica de registro e estatísticas de estudos
+ */
+
+import { getDb } from '../db-provider';
+
+export interface StudyLog {
+  id: number;
+  member_id: number;
+  repertoire_item_id: number;
+  tipo: 'individual' | 'grupo';
+  duracao_minutos: number | null;
+  notas: string | null;
+  estudado_em: string;
+  musica_nome: string;
+  autor: string | null;
+}
+
+export interface StudyStats {
+  total_estudos: number;
+  tempo_total_minutos: number;
+  estudos_por_tipo: { tipo: string; total: number }[];
+  musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[];
+}
+
+export interface CreateStudyLogInput {
+  member_id: number;
+  repertoire_item_id: number;
+  tipo: 'individual' | 'grupo';
+  duracao_minutos?: number;
+  notas?: string;
+}
+
+export class StudyLogsService {
+  private db: any;
+
+  constructor() {
+    this.db = getDb();
+  }
+
+  /**
+   * Lista logs de estudo de um membro
+   */
+  async findByMember(memberId: number, limit: number = 100): Promise<StudyLog[]> {
+    return this.db
+      .prepare(`
+        SELECT sl.*, r.nome as musica_nome, r.autor
+        FROM study_logs sl
+        JOIN repertoire_items r ON sl.repertoire_item_id = r.id
+        WHERE sl.member_id = ?
+        ORDER BY sl.estudado_em DESC
+        LIMIT ?
+      `)
+      .all(memberId, limit) as StudyLog[];
+  }
+
+  /**
+   * Lista logs de estudo de uma música
+   */
+  async findByRepertoire(repertoireId: number, limit: number = 100): Promise<StudyLog[]> {
+    return this.db
+      .prepare(`
+        SELECT sl.*, m.nome as membro_nome
+        FROM study_logs sl
+        JOIN members m ON sl.member_id = m.id
+        WHERE sl.repertoire_item_id = ?
+        ORDER BY sl.estudado_em DESC
+        LIMIT ?
+      `)
+      .all(repertoireId, limit) as StudyLog[];
+  }
+
+  /**
+   * Cria log de estudo
+   */
+  async create(input: CreateStudyLogInput): Promise<StudyLog> {
+    const result = this.db
+      .prepare(`
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas)
+        VALUES (?, ?, ?, ?, ?)
+      `)
+      .run(
+        input.member_id,
+        input.repertoire_item_id,
+        input.tipo,
+        input.duracao_minutos || null,
+        input.notas || null
+      );
+
+    const log = this.db
+      .prepare('SELECT * FROM study_logs WHERE id = ?')
+      .get(result.lastInsertRowid) as StudyLog;
+
+    // Adicionar nome da música
+    const item = this.db
+      .prepare('SELECT nome, autor FROM repertoire_items WHERE id = ?')
+      .get(input.repertoire_item_id) as { nome: string; autor: string | null };
+
+    return {
+      ...log,
+      musica_nome: item.nome,
+      autor: item.autor,
+    };
+  }
+
+  /**
+   * Busca estatísticas de estudo de um membro
+   */
+  async getStats(memberId: number): Promise<StudyStats> {
+    // Total de estudos
+    const totalEstudos = this.db
+      .prepare('SELECT COUNT(*) as total FROM study_logs WHERE member_id = ?')
+      .get(memberId) as { total: number };
+
+    // Tempo total estudado
+    const tempoTotal = this.db
+      .prepare('SELECT COALESCE(SUM(duracao_minutos), 0) as total FROM study_logs WHERE member_id = ? AND duracao_minutos IS NOT NULL')
+      .get(memberId) as { total: number };
+
+    // Estudos por tipo
+    const estudosPorTipo = this.db
+      .prepare(`
+        SELECT tipo, COUNT(*) as total
+        FROM study_logs
+        WHERE member_id = ?
+        GROUP BY tipo
+      `)
+      .all(memberId) as { tipo: string; total: number }[];
+
+    // Músicas mais estudadas
+    const musicasMaisEstudadas = this.db
+      .prepare(`
+        SELECT r.nome, r.autor, COUNT(*) as total_estudos
+        FROM study_logs sl
+        JOIN repertoire_items r ON sl.repertoire_item_id = r.id
+        WHERE sl.member_id = ?
+        GROUP BY sl.repertoire_item_id
+        ORDER BY total_estudos DESC
+        LIMIT 10
+      `)
+      .all(memberId) as { nome: string; autor: string | null; total_estudos: number }[];
+
+    return {
+      total_estudos: totalEstudos.total,
+      tempo_total_minutos: tempoTotal.total,
+      estudos_por_tipo: estudosPorTipo,
+      musicas_mais_estudadas: musicasMaisEstudadas,
+    };
+  }
+}
+
+// Singleton exportado
+export const studyLogsService = new StudyLogsService();
