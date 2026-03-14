@@ -34,10 +34,13 @@ bootstrap().then(() => {
 
 const app = new Hono();
 
-// CORS para desenvolvimento e produção
+// CORS para desenvolvimento e produção local (localhost:7000)
+// Em produção real com domínio, o Caddy faz proxy reverso (same-origin)
 app.use('/*', cors({
   origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:7000', 'https://meureg.mateusfonseca.me'],
   credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Rotas

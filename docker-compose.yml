@@ -11,7 +11,6 @@ services:
       - "7000:7000"
     environment:
       - NODE_ENV=production
-    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     depends_on:
       - backend
     restart: unless-stopped
@@ -24,9 +23,7 @@ services:
       context: ./back
       dockerfile: Dockerfile
     container_name: meu-regional-backend
-    working_dir: /app
     volumes:
-      - ./back:/app
       - backend_data:/app/data
     environment:
       - NODE_ENV=production
@@ -35,7 +32,6 @@ services:
       - SCRAPER_API_URL=http://scraper:4000
       - SPOTIFY_EMAIL=${SPOTIFY_EMAIL:-}
       - SPOTIFY_PASSWORD=${SPOTIFY_PASSWORD:-}
-    command: bun run dev
     depends_on:
       - scraper
     restart: unless-stopped

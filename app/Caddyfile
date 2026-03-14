@@ -1,18 +1,21 @@
 :7000 {
     root * /srv
-    file_server
+    encode
     
-    @api {
-        path /api/*
-    }
-    handle @api {
+    # API routes - proxy para backend
+    handle /api/* {
         reverse_proxy backend:3000
     }
     
-    @scraper {
-        path /scraper/*
+    # SPA fallback
+    handle {
+        try_files {path} /index.html
+        file_server
     }
-    handle @scraper {
-        reverse_proxy scraper:4000
-    }
+
+    log {
+                output stdout
+                format console
+        }
+
 }

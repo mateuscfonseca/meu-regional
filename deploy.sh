@@ -69,17 +69,14 @@ deploy() {
     fi
     
     log_info "Build do frontend (com containers antigos rodando)..."
-    sudo docker compose build --no-cache frontend
+    sudo docker compose build frontend
     
     log_info "Build do backend (com containers antigos rodando)..."
-    sudo docker compose build --no-cache backend
+    sudo docker compose build backend
     
     log_info "Build do scraper (com containers antigos rodando)..."
-    sudo docker compose build --no-cache scraper
-    
-    log_info "Aplicando migrações..."
-    sudo docker compose run --rm backend bun run migrate
-    
+    sudo docker compose build scraper
+        
     log_info "Subindo serviços com novas imagens..."
     sudo docker compose up -d
     
