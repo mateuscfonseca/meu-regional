@@ -11,19 +11,19 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Buscar no Spotify
         </label>
-        <div class="flex flex-col sm:flex-row gap-2">
+        <div class="flex flex-col gap-2">
           <input
             v-model="spotifySearchQuery"
             @input="debouncedSearch"
             @focus="showSearchResults = true"
             type="text"
-            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="Digite o nome da música..."
           />
           <button
             @click="searchSpotify"
             :disabled="searching"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors sm:w-auto w-full"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors w-full"
           >
             <span v-if="searching" class="animate-pulse">🔍</span>
             <span v-else>🔍</span>
@@ -32,18 +32,38 @@
 
         <!-- Resultados da busca -->
         <div
-          v-if="showSearchResults && spotifyResults.length > 0"
+          v-if="showSearchResults && (searching || spotifyResults.length > 0)"
           data-search-container
-          class="mt-2 border border-gray-200 rounded-lg max-h-60 overflow-y-auto bg-white shadow-lg z-10"
+          class="mt-2 border border-gray-200 rounded-lg max-h-60 overflow-hidden bg-white shadow-lg z-10"
         >
-          <div
-            v-for="(result, idx) in spotifyResults"
-            :key="idx"
-            @click="selectSpotifyResult(result)"
-            class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
-          >
-            <div class="font-medium text-gray-900">{{ result.nome }}</div>
-            <div class="text-sm text-gray-500">{{ result.autor }}</div>
+          <!-- Estado de Loading -->
+          <div v-if="searching" class="p-4 text-center text-gray-500">
+            <span class="mdi mdi-magnify animate-pulse inline-block mr-2"></span>
+            Buscando no Spotify...
+          </div>
+          
+          <!-- Resultados -->
+          <div v-else class="max-h-48 overflow-y-auto">
+            <div
+              v-for="(result, idx) in spotifyResults"
+              :key="idx"
+              @click="selectSpotifyResult(result)"
+              class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+            >
+              <div class="font-medium text-gray-900">{{ result.nome }}</div>
+              <div class="text-sm text-gray-500">{{ result.autor }}</div>
+            </div>
+          </div>
+          
+          <!-- Botão Fechar -->
+          <div class="border-t border-gray-200 p-2 flex justify-end">
+            <button
+              @click="closeSearchResults"
+              class="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
+              aria-label="Fechar resultados"
+            >
+              <span class="mdi mdi-close text-lg"></span>
+            </button>
           </div>
         </div>
       </div>
@@ -53,17 +73,17 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Ou cole URL do Spotify
         </label>
-        <div class="flex flex-col sm:flex-row gap-2">
+        <div class="flex flex-col gap-2">
           <input
             v-model="spotifyUrl"
             type="url"
-            class="w-full sm:flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
             placeholder="https://open.spotify.com/track/..."
           />
           <button
             @click="fetchSpotifyMetadata"
             :disabled="fetchingUrl"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap sm:w-auto w-full"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors w-full"
           >
             {{ fetchingUrl ? 'Extraindo...' : 'Preencher' }}
           </button>
@@ -363,7 +383,7 @@ async function searchSpotify() {
 function selectSpotifyResult(result: ScrapedMetadata) {
   form.value.nome = result.nome
   form.value.autor = result.autor
-  
+
   // Adicionar URL do Spotify aos links se disponível
   if (result.url) {
     const links = form.value.links ? form.value.links.split(',').map((l: string) => l.trim()) : []
@@ -372,9 +392,13 @@ function selectSpotifyResult(result: ScrapedMetadata) {
       form.value.links = links.join(', ')
     }
   }
-  
+
   spotifyResults.value = []
   spotifySearchQuery.value = result.nome
+  showSearchResults.value = false
+}
+
+function closeSearchResults() {
   showSearchResults.value = false
 }
 

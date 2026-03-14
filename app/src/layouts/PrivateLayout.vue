@@ -79,7 +79,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <span v-if="user" class="text-sm text-gray-600 hidden sm:block">
+          <span v-if="user" class="text-sm text-gray-600">
             {{ user.nome }} <span class="text-gray-400">({{ user.instrumento }})</span>
           </span>
           <button
