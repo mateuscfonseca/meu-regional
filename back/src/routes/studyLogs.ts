@@ -16,7 +16,8 @@ export const studyLogsRoutes = new Hono();
 // Listar logs de estudo de um membro
 studyLogsRoutes.get('/member/:memberId', async (c) => {
   const memberId = c.req.param('memberId');
-  const logs = await studyLogsService.findByMember(parseInt(memberId));
+  const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 100;
+  const logs = await studyLogsService.findByMember(parseInt(memberId), limit);
   return c.json({ logs });
 });
 
@@ -51,4 +52,22 @@ studyLogsRoutes.get('/member/:memberId/stats', async (c) => {
   const stats = await studyLogsService.getStats(parseInt(memberId));
 
   return c.json(stats);
+});
+
+// Excluir log de estudo
+studyLogsRoutes.delete('/:id', async (c) => {
+  const id = c.req.param('id');
+  const logId = parseInt(id);
+  
+  // Verificar se o log existe
+  const existingLog = (studyLogsService as any).db
+    .prepare('SELECT id FROM study_logs WHERE id = ?')
+    .get(logId);
+  
+  if (!existingLog) {
+    return c.json({ error: 'Registro de estudo não encontrado' }, 404);
+  }
+  
+  await studyLogsService.delete(logId);
+  return c.json({ success: true });
 });

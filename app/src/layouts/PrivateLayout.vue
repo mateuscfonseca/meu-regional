@@ -182,7 +182,7 @@ const navLinks = [
   { to: '/selections', label: 'Seleções', icon: 'mdi mdi-playlist-play' },
   { to: '/study', label: 'Estudos', icon: 'mdi mdi-school' },
   { to: '/members', label: 'Membros', icon: 'mdi mdi-account-group' },
-  { to: '/settings/spotify', label: 'Config. Spotify', icon: 'mdi mdi-cog' }
+  { to: '/integrations', label: 'Integrações', icon: 'mdi mdi-puzzle' }
 ]
 
 function isActive(to: string) {

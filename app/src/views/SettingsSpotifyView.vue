@@ -1,9 +1,5 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-gray-900">Spotify Scraper</h1>
-    </div>
-
     <!-- Status -->
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex items-center justify-between mb-4">

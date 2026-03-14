@@ -36,12 +36,12 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 export function useStudyLogs() {
-  async function loadLogs(memberId: number) {
+  async function loadLogs(memberId: number, limit: number = 100) {
     loading.value = true
     error.value = null
-    
+
     try {
-      const response = await api.get(`/study-logs/member/${memberId}`)
+      const response = await api.get(`/study-logs/member/${memberId}?limit=${limit}`)
       logs.value = response.data.logs
       return logs.value
     } catch (err: any) {
@@ -109,6 +109,25 @@ export function useStudyLogs() {
     }
   }
 
+  async function deleteLog(logId: number, memberId: number) {
+    error.value = null
+
+    try {
+      await api.delete(`/study-logs/${logId}`)
+      logs.value = logs.value.filter(log => log.id !== logId)
+
+      // Atualizar stats
+      if (stats.value) {
+        await loadStats(memberId)
+      }
+
+      return true
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao excluir registro'
+      throw err
+    }
+  }
+
   function formatDate(dateStr: string, includeTime: boolean = true) {
     if (!includeTime) {
       return new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -134,6 +153,7 @@ export function useStudyLogs() {
     loadLogs,
     loadStats,
     logStudy,
+    deleteLog,
     findByRepertoire,
     formatDate
   }

@@ -119,6 +119,13 @@ export class StudyLogsService {
   }
 
   /**
+   * Exclui log de estudo
+   */
+  async delete(id: number): Promise<void> {
+    this.db.prepare('DELETE FROM study_logs WHERE id = ?').run(id);
+  }
+
+  /**
    * Busca estatísticas de estudo de um membro
    */
   async getStats(memberId: number): Promise<StudyStats> {

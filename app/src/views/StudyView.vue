@@ -94,11 +94,26 @@
 
     <!-- Histórico - Lista Mobile First -->
     <div class="bg-white rounded-lg shadow">
-      <div class="px-4 sm:px-6 py-4 border-b">
+      <div class="px-4 sm:px-6 py-4 border-b flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3 class="text-lg font-semibold text-gray-900 inline-flex items-center gap-2">
           <span class="mdi mdi-history"></span>
           Histórico de Estudos
         </h3>
+        
+        <!-- Filtro de quantidade -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-600">Mostrar:</label>
+          <select
+            v-model="logsLimit"
+            @change="loadLogsLimit"
+            class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:border-green-500 focus:ring-green-500"
+          >
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="15">15</option>
+            <option :value="100">Todos</option>
+          </select>
+        </div>
       </div>
 
       <div v-if="logs.length === 0" class="p-8 text-center text-gray-500">
@@ -148,22 +163,65 @@
                 </span>
               </div>
             </div>
+
+            <!-- Botão de excluir -->
+            <button
+              @click="confirmDelete(log)"
+              class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors self-end sm:self-center"
+              aria-label="Excluir estudo"
+            >
+              <span class="mdi mdi-delete text-lg"></span>
+            </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <BaseModal
+      v-model="showDeleteModal"
+      title="Excluir Estudo"
+      size="sm"
+    >
+      <div class="py-4">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="mdi mdi-alert-circle text-red-600 text-3xl"></span>
+          <p class="text-gray-700">Tem certeza que deseja excluir este registro de estudo?</p>
+        </div>
+        <p class="text-sm text-gray-500">Esta ação não pode ser desfeita.</p>
+      </div>
+
+      <template #footer>
+        <button
+          @click="showDeleteModal = false"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmDeleteLog"
+          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+        >
+          Excluir
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useStudyLogs } from '../composables/useStudyLogs'
+import BaseModal from '../components/base/BaseModal.vue'
 
 const { state } = useAuth()
-const { logs, stats, loadLogs, loadStats, formatDate } = useStudyLogs()
+const { logs, stats, loadLogs, loadStats, formatDate, deleteLog } = useStudyLogs()
 
 const user = state.user
+const logsLimit = ref(10)
+const showDeleteModal = ref(false)
+const logToDelete = ref<any>(null)
 
 const individualCount = computed(() => {
   const individual = stats.value?.estudos_por_tipo?.find((e: any) => e.tipo === 'individual')
@@ -180,9 +238,31 @@ async function loadData() {
 
   try {
     await loadStats(user.id)
-    await loadLogs(user.id)
+    await loadLogs(user.id, logsLimit.value)
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
+  }
+}
+
+function loadLogsLimit() {
+  if (!user?.id) return
+  loadLogs(user.id, logsLimit.value)
+}
+
+function confirmDelete(log: any) {
+  logToDelete.value = log
+  showDeleteModal.value = true
+}
+
+async function confirmDeleteLog() {
+  if (!logToDelete.value || !user?.id) return
+
+  try {
+    await deleteLog(logToDelete.value.id, user.id)
+    showDeleteModal.value = false
+    logToDelete.value = null
+  } catch (error) {
+    console.error('Erro ao excluir estudo:', error)
   }
 }
 

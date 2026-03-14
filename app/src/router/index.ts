@@ -60,9 +60,16 @@ const router = createRouter({
           component: () => import('../views/MembersView.vue')
         },
         {
-          path: 'settings/spotify',
-          name: 'settings-spotify',
-          component: () => import('../views/SettingsSpotifyView.vue')
+          path: 'integrations',
+          name: 'integrations',
+          redirect: '/integrations/spotify',
+          children: [
+            {
+              path: 'spotify',
+              name: 'integrations-spotify',
+              component: () => import('../views/IntegrationsView.vue')
+            }
+          ]
         }
       ]
     }
