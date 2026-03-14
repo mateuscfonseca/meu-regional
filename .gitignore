@@ -7,9 +7,9 @@ dist/
 *.tsbuildinfo
 
 # Database
-# *.db
-# *.db-journal
-# data/
+*.db
+*.db-journal
+data/
 
 # Environment
 .env
