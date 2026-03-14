@@ -20,6 +20,11 @@ export const authRoutes = new Hono();
 
 // Registro de regional e primeiro membro
 authRoutes.post('/register', async (c) => {
+  // Verificar se registro está desabilitado
+  if (process.env.DISABLE_REGISTRATION === 'true') {
+    return c.json({ error: 'Registro temporariamente desabilitado' }, 403);
+  }
+
   try {
     const body = await c.req.json();
     const validated = registerSchema.parse(body);

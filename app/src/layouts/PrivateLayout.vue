@@ -33,6 +33,7 @@
             v-for="link in navLinks"
             :key="link.to"
             :to="link.to"
+            @click="handleNavClick"
             class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors"
             :class="isActive(link.to)
               ? 'bg-blue-50 text-blue-600'
@@ -165,6 +166,13 @@ function toggleSidebar() {
     sidebarOpen.value = false
   } else {
     sidebarOpen.value = !sidebarOpen.value
+  }
+}
+
+function handleNavClick() {
+  // Fecha sidebar no mobile após clicar em um link
+  if (window.innerWidth < 1024) {
+    sidebarOpen.value = false
   }
 }
 

@@ -53,9 +53,15 @@
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Não tem uma conta?
-          <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-500">
+          <a
+            v-if="!isRegistrationDisabled"
+            href="/register"
+            @click.prevent="goToRegister"
+            class="font-medium text-blue-600 hover:text-blue-500"
+          >
             Cadastre-se
-          </router-link>
+          </a>
+          <span v-else class="text-gray-400">Registro temporariamente desabilitado</span>
         </p>
       </div>
     </div>
@@ -74,6 +80,15 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+
+// Verificar se registro está desabilitado (mesma variável do backend)
+const isRegistrationDisabled = (import.meta as any).env?.VITE_DISABLE_REGISTRATION === 'true'
+
+function goToRegister() {
+  if (!isRegistrationDisabled) {
+    router.push('/register')
+  }
+}
 
 async function handleLogin() {
   error.value = ''

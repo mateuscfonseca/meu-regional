@@ -72,13 +72,22 @@ const router = createRouter({
 // Guarda de navegação - aguarda autenticação ser verificada
 router.beforeEach((to, from, next) => {
   const auth = useAuth()
-  
+
   // Aguarda a autenticação ser verificada antes de decidir
   if (auth.state.loading) {
     next()
     return
   }
-  
+
+  // Verificar se registro está desabilitado
+  const isRegistrationDisabled = (import.meta as any).env?.VITE_DISABLE_REGISTRATION === 'true'
+
+  // Redirecionar /register para /login se registro estiver desabilitado
+  if (to.path === '/register' && isRegistrationDisabled) {
+    next('/login')
+    return
+  }
+
   // Rotas protegidas requerem autenticação
   if (to.meta.requiresAuth && !auth.isAuthenticated()) {
     next('/login')
