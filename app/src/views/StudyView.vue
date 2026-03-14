@@ -16,10 +16,10 @@
       </div>
       <div class="bg-white rounded-lg shadow p-4 sm:p-6">
         <div class="text-xs sm:text-sm text-gray-600 inline-flex items-center gap-1">
-          <span class="mdi mdi-clock"></span>
-          Tempo Total
+          <span class="mdi mdi-calendar-week"></span>
+          Esta Semana
         </div>
-        <div class="text-2xl sm:text-3xl font-bold text-green-600 mt-2">{{ stats?.tempo_total_minutos || 0 }} min</div>
+        <div class="text-2xl sm:text-3xl font-bold text-green-600 mt-2">{{ stats?.estudos_na_semana || 0 }}</div>
       </div>
       <div class="bg-white rounded-lg shadow p-4 sm:p-6">
         <div class="text-xs sm:text-sm text-gray-600 inline-flex items-center gap-1">
@@ -34,6 +34,61 @@
           Em Grupo
         </div>
         <div class="text-2xl sm:text-3xl font-bold text-orange-600 mt-2">{{ grupoCount }}</div>
+      </div>
+    </div>
+
+    <!-- Frequência de Estudos -->
+    <div class="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 inline-flex items-center gap-2">
+        <span class="mdi mdi-calendar-clock"></span>
+        Frequência de Estudos
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="text-center p-3 rounded-lg bg-green-50">
+          <div class="text-sm text-gray-600 mb-1">Semana</div>
+          <div class="text-xl sm:text-2xl font-bold text-green-600">{{ stats?.estudos_na_semana || 0 }}</div>
+          <div class="text-xs text-gray-500 mt-1">estudos</div>
+        </div>
+        <div class="text-center p-3 rounded-lg bg-blue-50">
+          <div class="text-sm text-gray-600 mb-1">Mês</div>
+          <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ stats?.estudos_no_mes || 0 }}</div>
+          <div class="text-xs text-gray-500 mt-1">estudos</div>
+        </div>
+        <div class="text-center p-3 rounded-lg bg-purple-50">
+          <div class="text-sm text-gray-600 mb-1">Trimestre</div>
+          <div class="text-xl sm:text-2xl font-bold text-purple-600">{{ stats?.estudos_no_trimestre || 0 }}</div>
+          <div class="text-xs text-gray-500 mt-1">estudos</div>
+        </div>
+        <div class="text-center p-3 rounded-lg bg-orange-50">
+          <div class="text-sm text-gray-600 mb-1">Semestre</div>
+          <div class="text-xl sm:text-2xl font-bold text-orange-600">{{ stats?.estudos_no_semestre || 0 }}</div>
+          <div class="text-xs text-gray-500 mt-1">estudos</div>
+        </div>
+        <div class="text-center p-3 rounded-lg bg-red-50">
+          <div class="text-sm text-gray-600 mb-1">Ano</div>
+          <div class="text-xl sm:text-2xl font-bold text-red-600">{{ stats?.estudos_no_ano || 0 }}</div>
+          <div class="text-xs text-gray-500 mt-1">estudos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Músicas Diferentes -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="text-xs sm:text-sm text-gray-600 inline-flex items-center gap-1">
+          <span class="mdi mdi-music-box"></span>
+          Músicas Estudadas na Semana
+        </div>
+        <div class="text-xl sm:text-2xl font-bold text-blue-600 mt-2">{{ stats?.musicas_diferentes_estudadas_semana || 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">músicas diferentes</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div class="text-xs sm:text-sm text-gray-600 inline-flex items-center gap-1">
+          <span class="mdi mdi-music-box"></span>
+          Músicas Estudadas no Mês
+        </div>
+        <div class="text-xl sm:text-2xl font-bold text-green-600 mt-2">{{ stats?.musicas_diferentes_estudadas_mes || 0 }}</div>
+        <div class="text-xs text-gray-500 mt-1">músicas diferentes</div>
       </div>
     </div>
 
@@ -85,12 +140,8 @@
                 {{ log.musica_nome }}
               </div>
 
-              <!-- Duração e Notas (mobile) -->
+              <!-- Notas (mobile) -->
               <div class="mt-2 flex flex-wrap items-center gap-3 text-xs sm:text-sm text-gray-500">
-                <span class="inline-flex items-center gap-1">
-                  <span class="mdi mdi-clock"></span>
-                  {{ log.duracao_minutos || '-' }} min
-                </span>
                 <span v-if="log.notas" class="inline-flex items-center gap-1 truncate max-w-full">
                   <span class="mdi mdi-note-text"></span>
                   <span class="truncate">{{ log.notas }}</span>

@@ -35,6 +35,13 @@ export interface SelectionResult {
   total_votos: number;
 }
 
+export interface SelectionVoter {
+  member_id: number;
+  member_nome: string;
+  member_instrumento: string;
+  votado_em: string;
+}
+
 export interface SelectionDetail {
   selection: Selection;
   votes: SelectionVote[];
@@ -272,6 +279,21 @@ export class SelectionsService {
 
     this.db.prepare("UPDATE selections SET status = 'votacao' WHERE id = ?").run(selectionId);
     this.db.prepare('DELETE FROM selection_results WHERE selection_id = ?').run(selectionId);
+  }
+
+  /**
+   * Lista membros que votaram em uma música específica
+   */
+  async getVoters(selectionId: number, repertoireItemId: number): Promise<SelectionVoter[]> {
+    return this.db
+      .prepare(`
+        SELECT sv.member_id, m.nome as member_nome, m.instrumento as member_instrumento, sv.votado_em
+        FROM selection_votes sv
+        JOIN members m ON sv.member_id = m.id
+        WHERE sv.selection_id = ? AND sv.repertoire_item_id = ?
+        ORDER BY sv.votado_em DESC
+      `)
+      .all(selectionId, repertoireItemId) as SelectionVoter[];
   }
 }
 

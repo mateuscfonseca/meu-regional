@@ -116,3 +116,13 @@ selectionsRoutes.post('/:id/reopen', async (c) => {
 
   return c.json({ success: true });
 });
+
+// Listar votantes de uma música
+selectionsRoutes.get('/:id/votes/:repertoireItemId/voters', async (c) => {
+  const selectionId = parseInt(c.req.param('id'));
+  const repertoireItemId = parseInt(c.req.param('repertoireItemId'));
+
+  const voters = await selectionsService.getVoters(selectionId, repertoireItemId);
+
+  return c.json({ voters });
+});

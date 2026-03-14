@@ -140,10 +140,14 @@
                       <span class="mdi mdi-account text-xs"></span>
                       {{ vote.autor || '-' }}
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-medium">
+                    <button
+                      @click="openVotersModal(vote)"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-medium hover:bg-blue-100 transition-colors"
+                      title="Ver quem votou"
+                    >
                       <span class="mdi mdi-hand-back-right"></span>
                       {{ vote.total_votos }} voto{{ vote.total_votos !== 1 ? 's' : '' }}
-                    </span>
+                    </button>
                   </div>
                 </div>
                 <button
@@ -216,7 +220,13 @@
                 <!-- Votos -->
                 <div class="flex-shrink-0 text-right">
                   <div class="text-xs sm:text-sm text-gray-500">Votos</div>
-                  <div class="text-lg sm:text-xl font-bold text-blue-600">{{ result.total_votos }}</div>
+                  <button
+                    @click="openVotersModal(result)"
+                    class="text-lg sm:text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                    title="Ver quem votou"
+                  >
+                    {{ result.total_votos }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -229,6 +239,59 @@
         Resultados ainda não disponíveis. A seleção precisa ser finalizada.
       </div>
     </div>
+
+    <!-- Modal de Votantes -->
+    <BaseModal
+      v-model="showVotersModal"
+      title="Membros que votaram nesta música"
+      size="md"
+      :show-close="true"
+      :close-on-overlay="true"
+      @close="closeVotersModal"
+    >
+      <div v-if="votersLoading" class="text-center py-8">
+        <span class="mdi mdi-loading mdi-spin text-3xl text-blue-600 block mb-2"></span>
+        <p class="text-gray-500">Carregando...</p>
+      </div>
+
+      <div v-else-if="voters.length === 0" class="text-center py-8 text-gray-500">
+        <span class="mdi mdi-account-off text-4xl text-gray-300 block mb-2"></span>
+        <p>Nenhum voto registrado ainda.</p>
+      </div>
+
+      <div v-else class="space-y-3 max-h-96 overflow-y-auto">
+        <div
+          v-for="voter in voters"
+          :key="voter.member_id"
+          class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+              {{ voter.member_nome.charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium text-gray-900 truncate">{{ voter.member_nome }}</div>
+              <div class="text-sm text-gray-500 flex items-center gap-1">
+                <span class="mdi mdi-music text-xs"></span>
+                {{ voter.member_instrumento }}
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-gray-400 flex-shrink-0">
+            {{ new Date(voter.votado_em).toLocaleDateString('pt-BR') }}
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <button
+          @click="closeVotersModal"
+          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 font-medium text-sm"
+        >
+          Fechar
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -238,11 +301,12 @@ import { useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useSelections } from '../composables/useSelections'
 import { useRepertoire } from '../composables/useRepertoire'
+import BaseModal from '../components/base/BaseModal.vue'
 
 const route = useRoute()
 const auth = useAuth()
 const user = auth.state.user
-const { loadSelectionDetail, vote, removeVote, finalizeSelection: finalizeSelectionApi } = useSelections()
+const { loadSelectionDetail, vote, removeVote, finalizeSelection: finalizeSelectionApi, getVoters } = useSelections()
 const { items: repertoireItems, loadRepertoire } = useRepertoire()
 
 const selection = ref<any>(null)
@@ -255,6 +319,12 @@ const voting = ref(false)
 const voteError = ref('')
 const finalizing = ref(false)
 
+// Modal de votantes
+const showVotersModal = ref(false)
+const votersLoading = ref(false)
+const voters = ref<any[]>([])
+const currentVotingItem = ref<any>(null)
+
 async function loadData() {
   loading.value = true
 
@@ -264,8 +334,8 @@ async function loadData() {
     votes.value = data.votes || []
     results.value = data.results || []
 
-    if (user?.regional_id) {
-      await loadRepertoire(user.regional_id)
+    if (user?.regional_id && user?.id) {
+      await loadRepertoire(user.regional_id, user.id)
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
@@ -332,6 +402,29 @@ function getOrdinalSuffix(posicao: number): string {
   if (ultimo === 1) return 'º'
   if (ultimo === 2) return 'ª'
   return 'º'
+}
+
+// Modal de votantes
+async function openVotersModal(vote: any) {
+  currentVotingItem.value = vote
+  showVotersModal.value = true
+  votersLoading.value = true
+  voters.value = []
+
+  try {
+    const result = await getVoters(selection.value.id, vote.repertoire_item_id)
+    voters.value = result
+  } catch (error) {
+    console.error('Erro ao carregar votantes:', error)
+  } finally {
+    votersLoading.value = false
+  }
+}
+
+function closeVotersModal() {
+  showVotersModal.value = false
+  currentVotingItem.value = null
+  voters.value = []
 }
 
 onMounted(loadData)

@@ -25,6 +25,14 @@ export interface StudyStats {
   tempo_total_minutos: number;
   estudos_por_tipo: { tipo: string; total: number }[];
   musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[];
+  // Frequência por período
+  estudos_na_semana: number;
+  estudos_no_mes: number;
+  estudos_no_trimestre: number;
+  estudos_no_semestre: number;
+  estudos_no_ano: number;
+  musicas_diferentes_estudadas_semana: number;
+  musicas_diferentes_estudadas_mes: number;
 }
 
 export interface CreateStudyLogInput {
@@ -147,11 +155,53 @@ export class StudyLogsService {
       `)
       .all(memberId) as { nome: string; autor: string | null; total_estudos: number }[];
 
+    // Estudos na semana (últimos 7 dias)
+    const estudosNaSemana = this.db
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-7 days')")
+      .get(memberId) as { total: number };
+
+    // Estudos no mês (últimos 30 dias)
+    const estudosNoMes = this.db
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-30 days')")
+      .get(memberId) as { total: number };
+
+    // Estudos no trimestre (últimos 90 dias)
+    const estudosNoTrimestre = this.db
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-90 days')")
+      .get(memberId) as { total: number };
+
+    // Estudos no semestre (últimos 180 dias)
+    const estudosNoSemestre = this.db
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-180 days')")
+      .get(memberId) as { total: number };
+
+    // Estudos no ano (últimos 365 dias)
+    const estudosNoAno = this.db
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-365 days')")
+      .get(memberId) as { total: number };
+
+    // Músicas diferentes estudadas na semana
+    const musicasDiferentesSemana = this.db
+      .prepare("SELECT COUNT(DISTINCT repertoire_item_id) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-7 days')")
+      .get(memberId) as { total: number };
+
+    // Músicas diferentes estudadas no mês
+    const musicasDiferentesMes = this.db
+      .prepare("SELECT COUNT(DISTINCT repertoire_item_id) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-30 days')")
+      .get(memberId) as { total: number };
+
     return {
       total_estudos: totalEstudos.total,
       tempo_total_minutos: tempoTotal.total,
       estudos_por_tipo: estudosPorTipo,
       musicas_mais_estudadas: musicasMaisEstudadas,
+      estudos_na_semana: estudosNaSemana.total,
+      estudos_no_mes: estudosNoMes.total,
+      estudos_no_trimestre: estudosNoTrimestre.total,
+      estudos_no_semestre: estudosNoSemestre.total,
+      estudos_no_ano: estudosNoAno.total,
+      musicas_diferentes_estudadas_semana: musicasDiferentesSemana.total,
+      musicas_diferentes_estudadas_mes: musicasDiferentesMes.total,
     };
   }
 }

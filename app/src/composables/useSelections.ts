@@ -109,12 +109,24 @@ export function useSelections() {
 
   async function reopenSelection(selectionId: number) {
     error.value = null
-    
+
     try {
       await api.post(`/selections/${selectionId}/reopen`)
       await loadSelectionDetail(selectionId)
     } catch (err: any) {
       error.value = err.response?.data?.error || 'Erro ao reabrir seleção'
+      throw err
+    }
+  }
+
+  async function getVoters(selectionId: number, repertoireItemId: number) {
+    error.value = null
+
+    try {
+      const response = await api.get(`/selections/${selectionId}/votes/${repertoireItemId}/voters`)
+      return response.data.voters || []
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao carregar votantes'
       throw err
     }
   }
@@ -135,6 +147,7 @@ export function useSelections() {
     removeVote,
     finalizeSelection,
     reopenSelection,
+    getVoters,
     clearCurrentSelection
   }
 }

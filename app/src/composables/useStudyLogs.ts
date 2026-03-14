@@ -20,6 +20,14 @@ export interface StudyStats {
   tempo_total_minutos: number
   estudos_por_tipo: { tipo: string; total: number }[]
   musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[]
+  // Frequência por período
+  estudos_na_semana: number
+  estudos_no_mes: number
+  estudos_no_trimestre: number
+  estudos_no_semestre: number
+  estudos_no_ano: number
+  musicas_diferentes_estudadas_semana: number
+  musicas_diferentes_estudadas_mes: number
 }
 
 const logs = ref<StudyLog[]>([])

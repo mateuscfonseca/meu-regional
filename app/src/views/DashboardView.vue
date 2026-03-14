@@ -61,18 +61,18 @@
           </div>
         </div>
 
-        <!-- Tempo Total Estudado -->
+        <!-- Estudos na Semana -->
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Tempo de Estudo</p>
-              <p class="text-3xl font-bold text-green-600">{{ tempoTotalFormatado }}</p>
+              <p class="text-sm font-medium text-gray-600">Estudos na Semana</p>
+              <p class="text-3xl font-bold text-green-600">{{ estudosNaSemana }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <span class="mdi mdi-clock-outline text-green-600 text-2xl"></span>
+              <span class="mdi mdi-calendar-week text-green-600 text-2xl"></span>
             </div>
           </div>
-          <p class="text-xs text-gray-500 mt-2">{{ tempoTotalMinutos }} minutos totais</p>
+          <p class="text-xs text-gray-500 mt-2">últimos 7 dias</p>
         </div>
 
         <!-- Média de Estudos por Música -->
@@ -87,6 +87,58 @@
             </div>
           </div>
           <p class="text-xs text-gray-500 mt-2">por música</p>
+        </div>
+      </div>
+
+      <!-- Frequência de Estudos -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">📅 Frequência de Estudos</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-sm text-gray-600 mb-1">Semana</div>
+            <div class="text-2xl font-bold text-green-600">{{ estudosNaSemana }}</div>
+            <div class="text-xs text-gray-500 mt-1">estudos</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-sm text-gray-600 mb-1">Mês</div>
+            <div class="text-2xl font-bold text-blue-600">{{ estudosNoMes }}</div>
+            <div class="text-xs text-gray-500 mt-1">estudos</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-sm text-gray-600 mb-1">Trimestre</div>
+            <div class="text-2xl font-bold text-purple-600">{{ estudosNoTrimestre }}</div>
+            <div class="text-xs text-gray-500 mt-1">estudos</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-sm text-gray-600 mb-1">Semestre</div>
+            <div class="text-2xl font-bold text-orange-600">{{ estudosNoSemestre }}</div>
+            <div class="text-xs text-gray-500 mt-1">estudos</div>
+          </div>
+          <div class="bg-white rounded-lg shadow p-4 text-center">
+            <div class="text-sm text-gray-600 mb-1">Ano</div>
+            <div class="text-2xl font-bold text-red-600">{{ estudosNoAno }}</div>
+            <div class="text-xs text-gray-500 mt-1">estudos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Músicas Diferentes por Período -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-gray-900">Músicas Estudadas na Semana</h3>
+            <span class="mdi mdi-music-box text-blue-600"></span>
+          </div>
+          <div class="text-3xl font-bold text-blue-600">{{ musicasDiferentesSemana }}</div>
+          <p class="text-sm text-gray-500 mt-1">músicas diferentes</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-gray-900">Músicas Estudadas no Mês</h3>
+            <span class="mdi mdi-music-box text-green-600"></span>
+          </div>
+          <div class="text-3xl font-bold text-green-600">{{ musicasDiferentesMes }}</div>
+          <p class="text-sm text-gray-500 mt-1">músicas diferentes</p>
         </div>
       </div>
 
@@ -224,9 +276,6 @@
                 </span>
               </div>
             </div>
-            <div v-if="estudo.duracao_minutos" class="text-right">
-              <div class="text-sm font-medium text-gray-700">{{ estudo.duracao_minutos }} min</div>
-            </div>
           </div>
         </div>
       </div>
@@ -272,16 +321,17 @@ const hasData = computed(() => repertoire.value.length > 0)
 // Estatísticas gerais
 const totalMusicas = computed(() => repertoire.value.length)
 const totalEstudos = computed(() => stats.value?.total_estudos || 0)
-const tempoTotalMinutos = computed(() => stats.value?.tempo_total_minutos || 0)
 
-const tempoTotalFormatado = computed(() => {
-  const horas = Math.floor(tempoTotalMinutos.value / 60)
-  const minutos = tempoTotalMinutos.value % 60
-  if (horas > 0) {
-    return `${horas}h ${minutos}m`
-  }
-  return `${minutos}m`
-})
+// Frequência de estudos por período
+const estudosNaSemana = computed(() => stats.value?.estudos_na_semana || 0)
+const estudosNoMes = computed(() => stats.value?.estudos_no_mes || 0)
+const estudosNoTrimestre = computed(() => stats.value?.estudos_no_trimestre || 0)
+const estudosNoSemestre = computed(() => stats.value?.estudos_no_semestre || 0)
+const estudosNoAno = computed(() => stats.value?.estudos_no_ano || 0)
+
+// Músicas diferentes por período
+const musicasDiferentesSemana = computed(() => stats.value?.musicas_diferentes_estudadas_semana || 0)
+const musicasDiferentesMes = computed(() => stats.value?.musicas_diferentes_estudadas_mes || 0)
 
 const mediaEstudosPorMusica = computed(() => {
   if (totalMusicas.value === 0) return 0
