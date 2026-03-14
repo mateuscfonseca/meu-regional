@@ -73,7 +73,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
-          <img src="/favicon.ico" alt="Meu Regional" class="w-8 h-8 hidden sm:block" />
+          <img src="/favicon.ico" alt="Meu Regional" class="w-8 h-8" />
           <h1 class="text-lg font-semibold text-gray-900 hidden sm:block">Meu Regional</h1>
         </div>
 
