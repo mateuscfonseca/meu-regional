@@ -12,7 +12,10 @@
       <div class="flex flex-col h-full">
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
-          <h1 class="text-xl font-bold text-gray-900 whitespace-nowrap">Meu Regional</h1>
+          <div class="flex items-center gap-3">
+            <img src="/favicon.ico" alt="Meu Regional" class="w-8 h-8" />
+            <h1 class="text-xl font-bold text-gray-900 whitespace-nowrap">Meu Regional</h1>
+          </div>
           <button
             @click="toggleSidebar"
             class="p-2 rounded-md text-gray-600 hover:bg-gray-100"
@@ -70,6 +73,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
+          <img src="/favicon.ico" alt="Meu Regional" class="w-8 h-8 hidden sm:block" />
           <h1 class="text-lg font-semibold text-gray-900 hidden sm:block">Meu Regional</h1>
         </div>
 
