@@ -394,14 +394,14 @@
 
     <!-- Footer com ações -->
     <template #footer>
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+      <div class="flex flex-wrap items-center justify-between gap-3 w-full">
         <!-- Navegação -->
         <div v-if="showProgress" class="flex gap-2 flex-shrink-0">
           <button
             type="button"
             @click="$emit('navigate-previous')"
             :disabled="!currentIndex || currentIndex <= 1"
-            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1 flex-shrink-0"
+            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
           >
             <span class="mdi mdi-chevron-left"></span>
             <span class="hidden sm:inline">Anterior</span>
@@ -410,7 +410,7 @@
             type="button"
             @click="$emit('navigate-next')"
             :disabled="!currentIndex || currentIndex >= totalItems"
-            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1 flex-shrink-0"
+            class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-1"
           >
             <span class="hidden sm:inline">Próximo</span>
             <span class="mdi mdi-chevron-right"></span>
@@ -423,7 +423,7 @@
             type="button"
             @click="handleSubmitAndClose"
             :disabled="loading || !form.nome"
-            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 flex-shrink-0"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2"
           >
             <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
             <span v-else class="mdi mdi-content-save-check"></span>
@@ -434,7 +434,7 @@
             @click="handleSubmitAndContinue"
             :disabled="loading || !form.nome"
             type="button"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 flex-shrink-0"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2"
           >
             <span v-if="loading" class="mdi mdi-loading mdi-spin"></span>
             <span v-else class="mdi mdi-content-save-move"></span>

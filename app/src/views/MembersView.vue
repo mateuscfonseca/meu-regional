@@ -4,7 +4,7 @@
       <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Membros</h2>
       <button
         @click="showNewMemberModal = true"
-        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium touch-manipulation"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
       >
         Novo Membro
       </button>
@@ -45,81 +45,83 @@
     </div>
 
     <!-- Modal de Novo Membro -->
-    <div v-if="showNewMemberModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg p-4 sm:p-6 max-w-sm sm:max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Novo Membro</h3>
+    <BaseModal
+      v-model="showNewMemberModal"
+      title="Novo Membro"
+      size="sm"
+      @close="closeModal"
+    >
+      <form @submit.prevent="handleCreateMember" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Nome *</label>
+          <input
+            v-model="newMember.nome"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
+            placeholder="Nome completo"
+          />
+        </div>
 
-        <form @submit.prevent="handleCreateMember" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Nome *</label>
-            <input
-              v-model="newMember.nome"
-              type="text"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
-              placeholder="Nome completo"
-            />
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Username *</label>
+          <input
+            v-model="newMember.username"
+            type="text"
+            required
+            autocomplete="username"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
+            placeholder="username"
+          />
+        </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Username *</label>
-            <input
-              v-model="newMember.username"
-              type="text"
-              required
-              autocomplete="username"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
-              placeholder="username"
-            />
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Senha *</label>
+          <input
+            v-model="newMember.password"
+            type="password"
+            required
+            minlength="6"
+            autocomplete="new-password"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
+            placeholder="••••••••"
+          />
+        </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Senha *</label>
-            <input
-              v-model="newMember.password"
-              type="password"
-              required
-              minlength="6"
-              autocomplete="new-password"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
-              placeholder="••••••••"
-            />
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Instrumento *</label>
+          <input
+            v-model="newMember.instrumento"
+            type="text"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
+            placeholder="Ex: Violão de 7 cordas"
+          />
+        </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Instrumento *</label>
-            <input
-              v-model="newMember.instrumento"
-              type="text"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 sm:py-3 border text-base sm:text-sm"
-              placeholder="Ex: Violão de 7 cordas"
-            />
-          </div>
+        <div v-if="createError" class="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
+          {{ createError }}
+        </div>
+      </form>
 
-          <div v-if="createError" class="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
-            {{ createError }}
-          </div>
-
-          <div class="flex gap-3 justify-end">
-            <button
-              type="button"
-              @click="closeModal"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 text-sm font-medium touch-manipulation"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="loading"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm font-medium touch-manipulation"
-            >
-              {{ loading ? 'Criando...' : 'Criar' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      <template #footer>
+        <button
+          type="button"
+          @click="closeModal"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 text-sm font-medium"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          @click="handleCreateMember"
+          :disabled="loading"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+        >
+          {{ loading ? 'Criando...' : 'Criar' }}
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -127,6 +129,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useMembers } from '../composables/useMembers'
+import BaseModal from '../components/base/BaseModal.vue'
 
 const { state } = useAuth()
 const { members, loadMembers, createMember } = useMembers()
