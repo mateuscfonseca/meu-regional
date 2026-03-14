@@ -8,6 +8,7 @@ COPY . .
 
 # Build com variável de ambiente para produção
 ENV VITE_API_BASE_URL=/api
+ENV VITE_DISABLE_REGISTRATION=true
 RUN bun run build
 
 # Production stage com Caddy
