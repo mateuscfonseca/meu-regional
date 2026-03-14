@@ -25,12 +25,25 @@ describe('Repertoire Routes', () => {
 
     // Inserir dados de teste APÓS aplicar migrations
     testDb.run(`
-      INSERT INTO repertoire_items (regional_id, nome, autor, nivel_fluencia, tem_introducao, introducao_aprendida)
-      VALUES 
-        (1, 'Brasileirinho', 'Waldir Azevedo', 'tocando_bem', 1, 1),
-        (1, 'Tico-Tico no Fubá', 'Zequinha de Abreu', 'tirada', 1, 0),
-        (1, 'Odeon', 'Ernesto Nazareth', 'precisa_aprender', 0, 0),
-        (2, 'Música Regional 2', 'Autor 2', 'tirando_onda', 1, 1)
+      INSERT INTO regionais (id, nome) VALUES (1, 'Regional Teste');
+      INSERT INTO regionais (id, nome) VALUES (2, 'Regional 2');
+      
+      INSERT INTO members (id, regional_id, nome, username, password_hash, instrumento)
+      VALUES (1, 1, 'Membro 1', 'membro1', 'hash123', 'Violão');
+      
+      INSERT INTO repertoire_items (id, regional_id, nome, autor, tonalidade, tonalidade_modo, tem_introducao)
+      VALUES
+        (1, 1, 'Brasileirinho', 'Waldir Azevedo', 'C', 'maior', 1),
+        (2, 1, 'Tico-Tico no Fubá', 'Zequinha de Abreu', 'D', 'maior', 1),
+        (3, 1, 'Odeon', 'Ernesto Nazareth', 'F', 'maior', 0),
+        (4, 2, 'Música Regional 2', 'Autor 2', 'G', 'maior', 1);
+      
+      INSERT INTO member_repertoire (member_id, repertoire_item_id, nivel_fluencia, introducao_aprendida, ultima_pratica)
+      VALUES
+        (1, 1, 'tocando_bem', 1, '2025-01-10'),
+        (1, 2, 'tirada', 0, '2025-01-05'),
+        (1, 3, 'precisa_aprender', 0, NULL),
+        (1, 4, 'tirando_onda', 1, '2025-01-08');
     `);
 
     app = new Hono();

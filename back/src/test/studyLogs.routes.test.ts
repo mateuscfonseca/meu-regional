@@ -38,12 +38,11 @@ describe('Study Logs Routes', () => {
         (2, 1, 'Tico-Tico no Fubá', 'Zequinha de Abreu'),
         (3, 1, 'Odeon', 'Ernesto Nazareth');
       
-      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
+      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data, estudado_em)
       VALUES
-        (1, 1, 'individual', 30, 'Estudo focado na introdução', '2025-01-10'),
-        (1, 2, 'individual', 45, 'Prática de tercas', '2025-01-09'),
-        (1, 3, 'grupo', 60, 'Ensemble com o grupo', '2025-01-08'),
-        (2, 1, 'individual', 20, 'Primeiros acordes', '2025-01-07');
+        (1, 1, 'individual', 30, 'Estudo focado na introdução', '2025-01-10', '2025-01-10 10:00:00'),
+        (1, 2, 'individual', 45, 'Prática de tercas', '2025-01-09', '2025-01-09 11:00:00'),
+        (1, 1, 'grupo', 60, 'Ensemble com o grupo', '2025-01-08', '2025-01-08 14:00:00');
     `);
 
     app = new Hono();
@@ -81,14 +80,14 @@ describe('Study Logs Routes', () => {
       expect(data.logs).toHaveLength(0);
     });
 
-    it('deve retornar logs ordenados por data (mais recente primeiro)', async () => {
+    it('deve retornar logs ordenados por estudado_em (mais recente primeiro)', async () => {
       const response = await app.request('/study-logs/member/1');
       const data = await response.json() as any;
 
       expect(response.status).toBe(200);
-      expect(data.logs[0].data).toBe('2025-01-10');
-      expect(data.logs[1].data).toBe('2025-01-09');
-      expect(data.logs[2].data).toBe('2025-01-08');
+      expect(data.logs[0].estudado_em).toContain('2025-01-10');
+      expect(data.logs[1].estudado_em).toContain('2025-01-09');
+      expect(data.logs[2].estudado_em).toContain('2025-01-08');
     });
   });
 

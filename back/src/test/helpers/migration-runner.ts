@@ -1,6 +1,6 @@
 /**
  * Migration Runner para Testes
- * 
+ *
  * Aplica todas as migrations em um banco de dados de teste
  * Importa as migrations originais para evitar duplicação
  */
@@ -8,10 +8,14 @@
 import type { Database } from 'bun:sqlite';
 import * as migration001 from '../../migrations/001-initial-schema';
 import * as migration004 from '../../migrations/004-add-practice-fields';
+import * as migration005 from '../../migrations/005-member-repertoire-and-practice-logs';
+import * as migration006 from '../../migrations/006-study-logs-data-and-tonalidade-modo';
 
 const migrations = [
   { name: '001-initial-schema', up: migration001.up },
   { name: '004-add-practice-fields', up: migration004.up },
+  { name: '005-member-repertoire-and-practice-logs', up: migration005.up },
+  { name: '006-study-logs-data-and-tonalidade-modo', up: migration006.up },
 ];
 
 /**
