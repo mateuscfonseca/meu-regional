@@ -26,23 +26,23 @@ describe('Study Logs Routes', () => {
     // Inserir dados de teste APÓS aplicar migrations
     testDb.run(`
       INSERT INTO regionais (id, nome) VALUES (1, 'Regional Teste');
-      
+
       INSERT INTO members (id, regional_id, nome, username, password_hash, instrumento)
       VALUES
         (1, 1, 'Membro 1', 'membro1', 'hash123', 'Violão'),
         (2, 1, 'Membro 2', 'membro2', 'hash456', 'Cavaquinho');
-      
+
       INSERT INTO repertoire_items (id, regional_id, nome, autor)
       VALUES
         (1, 1, 'Brasileirinho', 'Waldir Azevedo'),
         (2, 1, 'Tico-Tico no Fubá', 'Zequinha de Abreu'),
         (3, 1, 'Odeon', 'Ernesto Nazareth');
-      
-      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data, estudado_em)
+
+      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, estudado_em, data)
       VALUES
-        (1, 1, 'individual', 30, 'Estudo focado na introdução', '2025-01-10', '2025-01-10 10:00:00'),
-        (1, 2, 'individual', 45, 'Prática de tercas', '2025-01-09', '2025-01-09 11:00:00'),
-        (1, 1, 'grupo', 60, 'Ensemble com o grupo', '2025-01-08', '2025-01-08 14:00:00');
+        (1, 1, 'individual', 30, 'Estudo focado na introdução', '2025-01-10 10:00:00', '2025-01-10'),
+        (1, 2, 'individual', 45, 'Prática de tercas', '2025-01-09 11:00:00', '2025-01-09'),
+        (1, 1, 'grupo', 60, 'Ensemble com o grupo', '2025-01-08 14:00:00', '2025-01-08');
     `);
 
     app = new Hono();
@@ -220,7 +220,7 @@ describe('Study Logs Routes', () => {
 
       // Verificar se foi excluído
       const result = testDb.prepare('SELECT * FROM study_logs WHERE id = ?').get(1);
-      expect(result).toBeUndefined();
+      expect(result).toBeNull();
     });
 
     it('deve retornar 404 se log não existir', async () => {

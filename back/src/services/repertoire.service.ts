@@ -1,11 +1,15 @@
 /**
  * Repertoire Service - Lógica de negócio de repertório
- * 
+ *
  * Encapsula toda a lógica de CRUD de itens do repertório
  */
 
 import { getDb } from '../db-provider';
 
+/**
+ * Item do repertório (dados gerais - visíveis para todos)
+ * Campos em repertoire_items
+ */
 export interface RepertoireItem {
   id: number;
   regional_id: number;
@@ -16,18 +20,40 @@ export interface RepertoireItem {
   metadados: Record<string, any> | null;
   criado_em: string;
   atualizado_em: string;
-  // Campos de prática
+  // Campos de prática (caracterização geral da música)
   tonalidade: string | null;
   tonalidade_modo: string | null;
   notas: string | null;
   tem_introducao: boolean;
   tem_tercas: boolean;
   tem_arranjo_6_cordas: boolean;
+}
+
+/**
+ * Dados de proficiência do usuário em relação a um item do repertório
+ * Campos em member_repertoire
+ */
+export interface MemberRepertoireData {
+  id: number;
+  member_id: number;
+  repertoire_item_id: number;
+  nivel_fluencia: string;
   introducao_aprendida: boolean;
   tercas_aprendidas: boolean;
   arranjo_6_cordas_aprendido: boolean;
-  nivel_fluencia: string | null;
+  notas_pessoais: string | null;
   ultima_pratica: string | null;
+  criado_em: string;
+  atualizado_em: string;
+}
+
+/**
+ * Item do repertório com dados de proficiência do membro
+ */
+export interface RepertoireItemWithMemberData extends RepertoireItem {
+  member_data?: MemberRepertoireData & {
+    ultima_pratica?: string | null;
+  };
 }
 
 export interface CreateRepertoireItemInput {
@@ -37,17 +63,13 @@ export interface CreateRepertoireItemInput {
   descricao?: string;
   links?: string[];
   metadados?: Record<string, any>;
-  // Campos de prática
+  // Campos de prática (caracterização geral - repertoire_items)
   tonalidade?: string;
   tonalidade_modo?: string;
   notas?: string;
   tem_introducao?: boolean;
   tem_tercas?: boolean;
   tem_arranjo_6_cordas?: boolean;
-  introducao_aprendida?: boolean;
-  tercas_aprendidas?: boolean;
-  arranjo_6_cordas_aprendido?: boolean;
-  nivel_fluencia?: string;
 }
 
 export interface UpdateRepertoireItemInput {
@@ -56,17 +78,23 @@ export interface UpdateRepertoireItemInput {
   descricao?: string;
   links?: string[];
   metadados?: Record<string, any>;
-  // Campos de prática
+  // Campos de prática (caracterização geral - repertoire_items)
   tonalidade?: string;
   tonalidade_modo?: string;
   notas?: string;
   tem_introducao?: boolean;
   tem_tercas?: boolean;
   tem_arranjo_6_cordas?: boolean;
+}
+
+export interface FindByRegionalFilters {
+  memberId?: number;
+  nao_praticadas_ha?: number;
+  nivel_fluencia?: string;
+  tem_introducao?: boolean;
   introducao_aprendida?: boolean;
   tercas_aprendidas?: boolean;
   arranjo_6_cordas_aprendido?: boolean;
-  nivel_fluencia?: string;
 }
 
 export interface ImportResult {
@@ -75,6 +103,67 @@ export interface ImportResult {
 }
 
 export class RepertoireService {
+  /**
+   * Lista itens do repertório de uma regional com filtros opcionais
+   */
+  async findByRegionalWithFilters(regionalId: number, filters: FindByRegionalFilters = {}): Promise<RepertoireItemWithMemberData[]> {
+    const { memberId, nao_praticadas_ha, nivel_fluencia, tem_introducao, introducao_aprendida, tercas_aprendidas, arranjo_6_cordas_aprendido } = filters;
+    
+    // Buscar dados com ou sem member_id
+    let items: RepertoireItemWithMemberData[];
+    
+    if (memberId) {
+      items = await this.findByRegionalWithMemberData(regionalId, memberId);
+    } else {
+      const rawItems = await this.findByRegional(regionalId);
+      items = rawItems.map(item => ({ ...item }));
+    }
+
+    // Aplicar filtros
+    return items.filter(item => {
+      // Filtro por tem_introducao (campo geral da música)
+      if (tem_introducao !== undefined) {
+        if (item.tem_introducao !== tem_introducao) return false;
+      }
+
+      // Filtros de proficiência do membro
+      const memberData = item.member_data;
+      
+      if (memberData) {
+        // Filtro por nivel_fluencia
+        if (nivel_fluencia) {
+          const niveis = nivel_fluencia.split(',');
+          if (!niveis.includes(memberData.nivel_fluencia)) return false;
+        }
+
+        // Filtro por introducao_aprendida
+        if (introducao_aprendida !== undefined) {
+          if (memberData.introducao_aprendida !== introducao_aprendida) return false;
+        }
+
+        // Filtro por tercas_aprendidas
+        if (tercas_aprendidas !== undefined) {
+          if (memberData.tercas_aprendidas !== tercas_aprendidas) return false;
+        }
+
+        // Filtro por arranjo_6_cordas_aprendido
+        if (arranjo_6_cordas_aprendido !== undefined) {
+          if (memberData.arranjo_6_cordas_aprendido !== arranjo_6_cordas_aprendido) return false;
+        }
+
+        // Filtro por nao_praticadas_ha (dias)
+        if (nao_praticadas_ha !== undefined && memberData.ultima_pratica) {
+          const dataUltimaPratica = new Date(memberData.ultima_pratica);
+          const dataLimite = new Date();
+          dataLimite.setDate(dataLimite.getDate() - nao_praticadas_ha);
+          if (dataUltimaPratica > dataLimite) return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
   /**
    * Lista todos os itens do repertório de uma regional
    */
@@ -90,6 +179,75 @@ export class RepertoireService {
 
     // Parsear campos JSON
     return items.map((item) => this.parseItem(item));
+  }
+
+  /**
+   * Lista itens do repertório de uma regional com dados de proficiência do membro
+   */
+  async findByRegionalWithMemberData(regionalId: number, memberId: number): Promise<RepertoireItemWithMemberData[]> {
+    const db = getDb();
+    const rows = db
+      .prepare(`
+        SELECT
+          ri.id, ri.regional_id, ri.nome, ri.autor, ri.descricao, ri.links, ri.metadados,
+          ri.tonalidade, ri.tonalidade_modo, ri.notas,
+          ri.tem_introducao, ri.tem_tercas, ri.tem_arranjo_6_cordas,
+          ri.criado_em, ri.atualizado_em,
+          COALESCE(mr.nivel_fluencia, 'precisa_aprender') as nivel_fluencia,
+          COALESCE(mr.introducao_aprendida, 0) as introducao_aprendida,
+          COALESCE(mr.tercas_aprendidas, 0) as tercas_aprendidas,
+          COALESCE(mr.arranjo_6_cordas_aprendido, 0) as arranjo_6_cordas_aprendido,
+          COALESCE(mr.notas_pessoais, NULL) as notas_pessoais,
+          mr.criado_em as member_criado_em,
+          mr.atualizado_em as member_atualizado_em,
+          (
+            SELECT MAX(sl.estudado_em)
+            FROM study_logs sl
+            WHERE sl.repertoire_item_id = ri.id
+              AND sl.member_id = ?
+          ) as ultima_pratica
+        FROM repertoire_items ri
+        LEFT JOIN member_repertoire mr
+          ON mr.repertoire_item_id = ri.id
+          AND mr.member_id = ?
+        WHERE ri.regional_id = ?
+        ORDER BY ri.nome ASC
+      `)
+      .all(memberId, memberId, regionalId) as any[];
+
+    return rows.map(row => {
+      const item: RepertoireItemWithMemberData = {
+        id: row.id,
+        regional_id: row.regional_id,
+        nome: row.nome,
+        autor: row.autor,
+        descricao: row.descricao,
+        links: row.links ? (typeof row.links === 'string' ? JSON.parse(row.links) : row.links) : null,
+        metadados: row.metadados ? (typeof row.metadados === 'string' ? JSON.parse(row.metadados) : row.metadados) : null,
+        tonalidade: row.tonalidade,
+        tonalidade_modo: row.tonalidade_modo,
+        notas: row.notas,
+        tem_introducao: Boolean(row.tem_introducao),
+        tem_tercas: Boolean(row.tem_tercas),
+        tem_arranjo_6_cordas: Boolean(row.tem_arranjo_6_cordas),
+        criado_em: row.criado_em,
+        atualizado_em: row.atualizado_em,
+        member_data: {
+          id: row.id,
+          member_id: memberId,
+          repertoire_item_id: row.id,
+          nivel_fluencia: row.nivel_fluencia,
+          introducao_aprendida: Boolean(row.introducao_aprendida),
+          tercas_aprendidas: Boolean(row.tercas_aprendidas),
+          arranjo_6_cordas_aprendido: Boolean(row.arranjo_6_cordas_aprendido),
+          notas_pessoais: row.notas_pessoais,
+          ultima_pratica: row.ultima_pratica,
+          criado_em: row.member_criado_em,
+          atualizado_em: row.member_atualizado_em,
+        },
+      };
+      return item;
+    });
   }
 
   /**
@@ -128,15 +286,6 @@ export class RepertoireService {
     if (item.tem_arranjo_6_cordas !== undefined) {
       item.tem_arranjo_6_cordas = Boolean(item.tem_arranjo_6_cordas);
     }
-    if (item.introducao_aprendida !== undefined) {
-      item.introducao_aprendida = Boolean(item.introducao_aprendida);
-    }
-    if (item.tercas_aprendidas !== undefined) {
-      item.tercas_aprendidas = Boolean(item.tercas_aprendidas);
-    }
-    if (item.arranjo_6_cordas_aprendido !== undefined) {
-      item.arranjo_6_cordas_aprendido = Boolean(item.arranjo_6_cordas_aprendido);
-    }
     return item;
   }
 
@@ -148,9 +297,8 @@ export class RepertoireService {
     const result = db
       .prepare(`
         INSERT INTO repertoire_items (regional_id, nome, autor, descricao, links, metadados,
-          tonalidade, tonalidade_modo, notas, tem_introducao, tem_tercas, tem_arranjo_6_cordas,
-          introducao_aprendida, tercas_aprendidas, arranjo_6_cordas_aprendido, nivel_fluencia)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          tonalidade, tonalidade_modo, notas, tem_introducao, tem_tercas, tem_arranjo_6_cordas)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .run(
         input.regional_id,
@@ -164,11 +312,7 @@ export class RepertoireService {
         input.notas || null,
         input.tem_introducao ? 1 : 0,
         input.tem_tercas ? 1 : 0,
-        input.tem_arranjo_6_cordas ? 1 : 0,
-        input.introducao_aprendida ? 1 : 0,
-        input.tercas_aprendidas ? 1 : 0,
-        input.arranjo_6_cordas_aprendido ? 1 : 0,
-        input.nivel_fluencia || 'precisa_aprender'
+        input.tem_arranjo_6_cordas ? 1 : 0
       );
 
     return this.findById(result.lastInsertRowid as number) as Promise<RepertoireItem>;
@@ -231,22 +375,6 @@ export class RepertoireService {
     if (input.tem_arranjo_6_cordas !== undefined) {
       fields.push('tem_arranjo_6_cordas = ?');
       values.push(input.tem_arranjo_6_cordas ? 1 : 0);
-    }
-    if (input.introducao_aprendida !== undefined) {
-      fields.push('introducao_aprendida = ?');
-      values.push(input.introducao_aprendida ? 1 : 0);
-    }
-    if (input.tercas_aprendidas !== undefined) {
-      fields.push('tercas_aprendidas = ?');
-      values.push(input.tercas_aprendidas ? 1 : 0);
-    }
-    if (input.arranjo_6_cordas_aprendido !== undefined) {
-      fields.push('arranjo_6_cordas_aprendido = ?');
-      values.push(input.arranjo_6_cordas_aprendido ? 1 : 0);
-    }
-    if (input.nivel_fluencia !== undefined) {
-      fields.push('nivel_fluencia = ?');
-      values.push(input.nivel_fluencia);
     }
 
     if (fields.length > 0) {
@@ -313,6 +441,30 @@ export class RepertoireService {
       items,
       total: items.length,
     };
+  }
+
+  /**
+   * Busca sugestões de músicas por nome
+   */
+  async findSuggestions(regionalId: number, query: string, limit: number): Promise<{ id: number; nome: string; autor: string | null; label: string }[]> {
+    const db = getDb();
+    const searchPattern = `%${query}%`;
+
+    const rows = db.prepare(`
+      SELECT id, nome, autor
+      FROM repertoire_items
+      WHERE regional_id = ?
+        AND nome LIKE ?
+      ORDER BY nome
+      LIMIT ?
+    `).all(regionalId, searchPattern, limit) as { id: number; nome: string; autor: string | null }[];
+
+    return rows.map(row => ({
+      id: row.id,
+      nome: row.nome,
+      autor: row.autor,
+      label: `${row.nome}${row.autor ? ` - ${row.autor}` : ''}`,
+    }));
   }
 }
 

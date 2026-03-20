@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { repertoireService } from '../services/repertoire.service';
 import { authService } from '../services/auth.service';
-import { getDb } from '../db-provider';
 import { z } from 'zod';
 
 const createRepertoireSchema = z.object({
@@ -90,76 +89,49 @@ export const repertoireRoutes = new Hono();
 repertoireRoutes.get('/regional/:regionalId', async (c) => {
   const regionalId = c.req.param('regionalId');
   const memberId = c.req.query('member_id');
-  const db = getDb();
 
-  // Query simples - JOIN para trazer member_data
-  let sql = `
-    SELECT
-      ri.id, ri.regional_id, ri.nome, ri.autor, ri.descricao, ri.links, ri.metadados,
-      ri.tonalidade, ri.tonalidade_modo, ri.notas,
-      ri.tem_introducao, ri.tem_tercas, ri.tem_arranjo_6_cordas,
-      ri.criado_em, ri.atualizado_em,
-      COALESCE(mr.nivel_fluencia, 'precisa_aprender') as nivel_fluencia,
-      COALESCE(mr.introducao_aprendida, 0) as introducao_aprendida,
-      COALESCE(mr.tercas_aprendidas, 0) as tercas_aprendidas,
-      COALESCE(mr.arranjo_6_cordas_aprendido, 0) as arranjo_6_cordas_aprendido,
-      COALESCE(mr.notas_pessoais, NULL) as notas_pessoais,
-      (
-        SELECT MAX(sl.estudado_em)
-        FROM study_logs sl
-        WHERE sl.repertoire_item_id = ri.id
-          AND sl.member_id = ?
-      ) as ultima_pratica
-    FROM repertoire_items ri
-    LEFT JOIN member_repertoire mr
-      ON mr.repertoire_item_id = ri.id
-      AND mr.member_id = ?
-    WHERE ri.regional_id = ?
-    ORDER BY ri.nome ASC
-  `;
-
-  const params = memberId ? [memberId, memberId, regionalId] : [regionalId];
-  const rows = db.prepare(sql).all(...params) as any[];
-
-  // Formatar resultados
-  const items = rows.map(row => {
-    const item: any = {
-      id: row.id,
-      regional_id: row.regional_id,
-      nome: row.nome,
-      autor: row.autor,
-      descricao: row.descricao,
-      links: row.links ? (typeof row.links === 'string' ? JSON.parse(row.links) : row.links) : null,
-      metadados: row.metadados ? (typeof row.metadados === 'string' ? JSON.parse(row.metadados) : row.metadados) : null,
-      tonalidade: row.tonalidade,
-      tonalidade_modo: row.tonalidade_modo,
-      notas: row.notas,
-      tem_introducao: Boolean(row.tem_introducao),
-      tem_tercas: Boolean(row.tem_tercas),
-      tem_arranjo_6_cordas: Boolean(row.tem_arranjo_6_cordas),
-      criado_em: row.criado_em,
-      atualizado_em: row.atualizado_em,
-    };
-
-    // Adicionar member_data se member_id foi fornecido
+  try {
+    // Parsear filtros da query string
+    const filters: any = {};
+    
     if (memberId) {
-      item.member_data = {
-        id: row.id,
-        member_id: memberId,
-        repertoire_item_id: row.id,
-        nivel_fluencia: row.nivel_fluencia,
-        introducao_aprendida: Boolean(row.introducao_aprendida),
-        tercas_aprendidas: Boolean(row.tercas_aprendidas),
-        arranjo_6_cordas_aprendido: Boolean(row.arranjo_6_cordas_aprendido),
-        notas_pessoais: row.notas_pessoais,
-        ultima_pratica: row.ultima_pratica,
-      };
+      filters.memberId = parseInt(memberId, 10);
+    }
+    
+    if (c.req.query('nao_praticadas_ha')) {
+      filters.nao_praticadas_ha = parseInt(c.req.query('nao_praticadas_ha')!, 10);
+    }
+    
+    if (c.req.query('nivel_fluencia')) {
+      filters.nivel_fluencia = c.req.query('nivel_fluencia');
+    }
+    
+    if (c.req.query('tem_introducao')) {
+      filters.tem_introducao = c.req.query('tem_introducao') === 'true';
+    }
+    
+    if (c.req.query('introducao_aprendida')) {
+      filters.introducao_aprendida = c.req.query('introducao_aprendida') === 'true';
+    }
+    
+    if (c.req.query('tercas_aprendidas')) {
+      filters.tercas_aprendidas = c.req.query('tercas_aprendidas') === 'true';
+    }
+    
+    if (c.req.query('arranjo_6_cordas_aprendido')) {
+      filters.arranjo_6_cordas_aprendido = c.req.query('arranjo_6_cordas_aprendido') === 'true';
     }
 
-    return item;
-  });
+    const items = await repertoireService.findByRegionalWithFilters(
+      parseInt(regionalId),
+      filters
+    );
 
-  return c.json({ items });
+    return c.json({ items });
+  } catch (error: any) {
+    console.error('[RepertoireRoutes] Erro ao listar repertório:', error);
+    return c.json({ error: error.message || 'Erro ao buscar repertório' }, 500);
+  }
 });
 
 /**
@@ -185,27 +157,13 @@ repertoireRoutes.get('/suggestions', async (c) => {
     }
 
     const regionalId = parseInt(regionalIdParam, 10);
-    const db = getDb();
 
-    // Buscar músicas que contenham a query
-    const searchPattern = `%${validated.q}%`;
-
-    const rows = db.prepare(`
-      SELECT id, nome, autor
-      FROM repertoire_items
-      WHERE regional_id = ?
-        AND nome LIKE ?
-      ORDER BY nome
-      LIMIT ?
-    `).all(regionalId, searchPattern, validated.limit) as { id: number; nome: string; autor: string | null }[];
-
-    // Formatrar sugestões
-    const suggestions = rows.map(row => ({
-      id: row.id,
-      nome: row.nome,
-      autor: row.autor,
-      label: `${row.nome}${row.autor ? ` - ${row.autor}` : ''}`,
-    }));
+    // Buscar sugestões
+    const suggestions = await repertoireService.findSuggestions(
+      regionalId,
+      validated.q,
+      validated.limit
+    );
 
     return c.json({
       query: validated.q,

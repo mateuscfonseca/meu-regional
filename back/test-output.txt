@@ -1,0 +1,313 @@
+bun test v1.3.0 (b0a6feca)
+
+src/test/practice.service.test.ts:
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > updatePracticeFields > deve atualizar campos de prática de uma música [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > updatePracticeFields > deve atualizar múltiplos campos booleanos [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > markAsPracticed > deve marcar música como praticada com data atual [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > markAsPracticed > deve atualizar nível de fluência ao marcar como praticada [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > getRepertoireWithFilters > deve filtrar por regional_id [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > getRepertoireWithFilters > deve filtrar músicas não praticadas há X dias [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > getRepertoireWithFilters > deve filtrar por tem_introducao [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeService > getRepertoireWithFilters > deve aplicar múltiplos filtros simultaneamente [1.00ms]
+
+src/test/repertoire.routes.test.ts:
+
+🔒 [DatabaseProvider] Database path: /home/mateus/Documentos/GitHub/meu-regional/back/data/meu-regional.db
+🔒 [DatabaseProvider] DATABASE_PATH env: not set
+🔒 [DatabaseProvider] NODE_ENV: test
+🔒 [DatabaseProvider] testDb is set: false
+
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve listar repertório de uma regional [5.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve filtrar por não praticadas há X dias [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve filtrar por nível de fluência [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve filtrar por tem_introducao [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve filtrar por introducao_aprendida [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/regional/:regionalId > deve aplicar múltiplos filtros [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/suggestions > deve buscar sugestões de músicas por nome [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/suggestions > deve buscar sugestões com busca parcial [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/suggestions > deve respeitar o limite de resultados [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/suggestions > deve retornar erro se regional_id não for fornecido [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > GET /repertoire/suggestions > deve filtrar por regional_id [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > POST /repertoire > deve criar novo item com campos básicos [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > POST /repertoire > deve criar novo item com campos de prática [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > POST /repertoire > deve retornar erro se nome não for fornecido [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > PUT /repertoire/:id > deve atualizar item do repertório [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > PUT /repertoire/:id > deve atualizar campos de prática [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > PUT /repertoire/:id > deve retornar 404 se item não existir [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > DELETE /repertoire/:id > deve deletar item do repertório [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Repertoire Routes > DELETE /repertoire/:id > deve retornar 404 se item não existir [1.00ms]
+
+src/test/studyLogs.routes.test.ts:
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId > deve listar logs de estudo de um membro [3.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId > deve respeitar o limite de resultados via query param [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId > deve retornar lista vazia se membro não tiver estudos [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId > deve retornar logs ordenados por estudado_em (mais recente primeiro) [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/repertoire/:repertoireId > deve listar logs de estudo de uma música [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/repertoire/:repertoireId > deve retornar lista vazia se música não tiver estudos [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > POST /study-logs > deve criar novo log de estudo [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > POST /study-logs > deve criar log com campos opcionais [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > POST /study-logs > deve retornar erro se tipo não for fornecido [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > POST /study-logs > deve retornar erro se tipo for inválido [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId/stats > deve retornar estatísticas de estudo de um membro [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > GET /study-logs/member/:memberId/stats > deve retornar estatísticas com zero se membro não tiver estudos [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > DELETE /study-logs/:id > deve excluir log de estudo [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > DELETE /study-logs/:id > deve retornar 404 se log não existir [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) Study Logs Routes > DELETE /study-logs/:id > deve atualizar contagem de estudos após exclusão [2.00ms]
+
+src/test/practice-group.service.test.ts:
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve buscar estatísticas de práticas em grupo [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar ensaios na semana (últimos 7 dias) [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar ensaios no mês (últimos 30 dias) [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar ensaios no trimestre (últimos 90 dias) [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar ensaios no semestre (últimos 180 dias) [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar ensaios no ano (últimos 365 dias) [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar músicas diferentes ensaiadas na semana [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar músicas mais ensaiadas [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve retornar último ensaio [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupStats > deve excluir estudos individuais das estatísticas [2.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupLogs > deve listar logs de práticas em grupo [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getGroupLogs > deve limitar resultados [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getPracticesByDate > deve buscar práticas de uma data específica [1.00ms]
+  ✅ Created all tables and indexes
+Colunas obsoletas já removidas ou não existentes
+[DatabaseProvider] Test database injected
+[DatabaseProvider] Test database removed
+(pass) PracticeGroupService > getPracticesByDate > deve retornar zero se não houver práticas na data [1.00ms]
+
+src/test/practice-calendar.routes.test.ts:
+
+📊 Migration Manager - Checking migrations...
+   Already applied: 4
+   Total registered: 4
+
+✅ All migrations are up to date!
+
+(pass) Practice Calendar Routes > GET /api/practice-calendar/member/:memberId/date > deve retornar práticas de uma data específica usando query param [1.00ms]
+(pass) Practice Calendar Routes > GET /api/practice-calendar/member/:memberId/date > deve retornar erro quando date não é fornecido
+(pass) Practice Calendar Routes > GET /api/practice-calendar/member/:memberId/date > deve retornar erro quando formato da data é inválido
+(pass) Practice Calendar Routes > GET /api/practice-calendar/member/:memberId/date > deve retornar lista vazia quando não há práticas na data
+
+ 60 pass
+ 0 fail
+ 140 expect() calls
+Ran 60 tests across 5 files. [177.00ms]

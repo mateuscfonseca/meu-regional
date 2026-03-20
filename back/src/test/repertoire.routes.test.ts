@@ -73,7 +73,7 @@ describe('Repertoire Routes', () => {
     });
 
     it('deve filtrar por nível de fluência', async () => {
-      const response = await app.request('/repertoire/regional/1?nivel_fluencia=tirada,tocando_bem');
+      const response = await app.request('/repertoire/regional/1?member_id=1&nivel_fluencia=tirada,tocando_bem');
       const data = await response.json() as any;
 
       expect(response.status).toBe(200);
@@ -89,7 +89,7 @@ describe('Repertoire Routes', () => {
     });
 
     it('deve filtrar por introducao_aprendida', async () => {
-      const response = await app.request('/repertoire/regional/1?introducao_aprendida=true');
+      const response = await app.request('/repertoire/regional/1?member_id=1&introducao_aprendida=true');
       const data = await response.json() as any;
 
       expect(response.status).toBe(200);
@@ -98,7 +98,7 @@ describe('Repertoire Routes', () => {
     });
 
     it('deve aplicar múltiplos filtros', async () => {
-      const response = await app.request('/repertoire/regional/1?tem_introducao=true&nivel_fluencia=tirada');
+      const response = await app.request('/repertoire/regional/1?member_id=1&tem_introducao=true&nivel_fluencia=tirada');
       const data = await response.json() as any;
 
       expect(response.status).toBe(200);
@@ -181,9 +181,9 @@ describe('Repertoire Routes', () => {
         nome: 'Nova Música',
         autor: 'Novo Autor',
         tonalidade: 'C',
+        tonalidade_modo: 'maior',
         tem_introducao: true,
-        introducao_aprendida: true,
-        nivel_fluencia: 'tirada',
+        tem_tercas: false,
       };
 
       const response = await app.request('/repertoire', {
@@ -197,8 +197,7 @@ describe('Repertoire Routes', () => {
       expect(response.status).toBe(201);
       expect(data.item.tonalidade).toBe('C');
       expect(data.item.tem_introducao).toBe(true);
-      expect(data.item.introducao_aprendida).toBe(true);
-      expect(data.item.nivel_fluencia).toBe('tirada');
+      expect(data.item.tem_tercas).toBe(false);
     });
 
     it('deve retornar erro se nome não for fornecido', async () => {
@@ -239,9 +238,9 @@ describe('Repertoire Routes', () => {
     it('deve atualizar campos de prática', async () => {
       const updateData = {
         tonalidade: 'D',
+        tonalidade_modo: 'menor',
         tem_tercas: true,
-        tercas_aprendidas: true,
-        nivel_fluencia: 'tocando_bem',
+        tem_introducao: false,
       };
 
       const response = await app.request('/repertoire/1', {
@@ -254,9 +253,9 @@ describe('Repertoire Routes', () => {
 
       expect(response.status).toBe(200);
       expect(data.item.tonalidade).toBe('D');
+      expect(data.item.tonalidade_modo).toBe('menor');
       expect(data.item.tem_tercas).toBe(true);
-      expect(data.item.tercas_aprendidas).toBe(true);
-      expect(data.item.nivel_fluencia).toBe('tocando_bem');
+      expect(data.item.tem_introducao).toBe(false);
     });
 
     it('deve retornar 404 se item não existir', async () => {

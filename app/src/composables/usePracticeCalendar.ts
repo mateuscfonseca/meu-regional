@@ -59,7 +59,9 @@ export function usePracticeCalendar() {
     error.value = null
 
     try {
-      const response = await api.get(`/practice-calendar/member/${memberId}/date/${date}`)
+      const response = await api.get(`/practice-calendar/member/${memberId}/date`, {
+        params: { date }
+      })
       practicesOnSelectedDate.value = response.data.practices
       selectedDate.value = date
       return response.data.practices

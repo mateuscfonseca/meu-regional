@@ -29,9 +29,14 @@ practiceCalendarRoutes.get('/member/:memberId/:year/:month', async (c) => {
 });
 
 // Práticas de uma data específica (usada ao clicar no dia do calendário)
-practiceCalendarRoutes.get('/member/:memberId/date/:date', async (c) => {
+practiceCalendarRoutes.get('/member/:memberId/date', async (c) => {
   const memberId = parseInt(c.req.param('memberId'));
-  const date = c.req.param('date');
+  const date = c.req.query('date');
+
+  // Validar presença da data
+  if (!date) {
+    return c.json({ error: 'Parâmetro "date" é obrigatório' }, 400);
+  }
 
   // Validar formato da data (YYYY-MM-DD)
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;

@@ -45,17 +45,20 @@ export interface CreateStudyLogInput {
 }
 
 export class StudyLogsService {
-  private db: any;
-
-  constructor() {
-    this.db = getDb();
+  /**
+   * Busca log de estudo por ID
+   */
+  async findById(id: number): Promise<StudyLog | null> {
+    const db = getDb();
+    return db.prepare('SELECT * FROM study_logs WHERE id = ?').get(id) as StudyLog | null;
   }
 
   /**
    * Lista logs de estudo de um membro
    */
   async findByMember(memberId: number, limit: number = 100): Promise<StudyLog[]> {
-    return this.db
+    const db = getDb();
+    return db
       .prepare(`
         SELECT sl.*, r.nome as musica_nome, r.autor
         FROM study_logs sl
@@ -71,7 +74,8 @@ export class StudyLogsService {
    * Lista logs de estudo de uma música
    */
   async findByRepertoire(repertoireId: number, limit: number = 100): Promise<StudyLog[]> {
-    return this.db
+    const db = getDb();
+    return db
       .prepare(`
         SELECT sl.*, m.nome as membro_nome, r.nome as musica_nome, r.autor
         FROM study_logs sl
@@ -88,7 +92,8 @@ export class StudyLogsService {
    * Cria log de estudo
    */
   async create(input: CreateStudyLogInput): Promise<StudyLog> {
-    const result = this.db
+    const db = getDb();
+    const result = db
       .prepare(`
         INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -102,14 +107,18 @@ export class StudyLogsService {
         input.data || new Date().toISOString().split('T')[0]
       );
 
-    const log = this.db
+    const log = db
       .prepare('SELECT * FROM study_logs WHERE id = ?')
       .get(result.lastInsertRowid) as StudyLog;
 
     // Adicionar nome da música
-    const item = this.db
+    const item = db
       .prepare('SELECT nome, autor FROM repertoire_items WHERE id = ?')
-      .get(input.repertoire_item_id) as { nome: string; autor: string | null };
+      .get(input.repertoire_item_id) as { nome: string; autor: string | null } | null;
+
+    if (!item) {
+      throw new Error(`Repertoire item with id ${input.repertoire_item_id} not found`);
+    }
 
     return {
       ...log,
@@ -122,25 +131,27 @@ export class StudyLogsService {
    * Exclui log de estudo
    */
   async delete(id: number): Promise<void> {
-    this.db.prepare('DELETE FROM study_logs WHERE id = ?').run(id);
+    const db = getDb();
+    db.prepare('DELETE FROM study_logs WHERE id = ?').run(id);
   }
 
   /**
    * Busca estatísticas de estudo de um membro
    */
   async getStats(memberId: number): Promise<StudyStats> {
+    const db = getDb();
     // Total de estudos
-    const totalEstudos = this.db
+    const totalEstudos = db
       .prepare('SELECT COUNT(*) as total FROM study_logs WHERE member_id = ?')
       .get(memberId) as { total: number };
 
     // Tempo total estudado
-    const tempoTotal = this.db
+    const tempoTotal = db
       .prepare('SELECT COALESCE(SUM(duracao_minutos), 0) as total FROM study_logs WHERE member_id = ? AND duracao_minutos IS NOT NULL')
       .get(memberId) as { total: number };
 
     // Estudos por tipo
-    const estudosPorTipo = this.db
+    const estudosPorTipo = db
       .prepare(`
         SELECT tipo, COUNT(*) as total
         FROM study_logs
@@ -150,7 +161,7 @@ export class StudyLogsService {
       .all(memberId) as { tipo: string; total: number }[];
 
     // Músicas mais estudadas
-    const musicasMaisEstudadas = this.db
+    const musicasMaisEstudadas = db
       .prepare(`
         SELECT r.nome, r.autor, COUNT(*) as total_estudos
         FROM study_logs sl
@@ -163,37 +174,37 @@ export class StudyLogsService {
       .all(memberId) as { nome: string; autor: string | null; total_estudos: number }[];
 
     // Estudos na semana (últimos 7 dias)
-    const estudosNaSemana = this.db
+    const estudosNaSemana = db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-7 days')")
       .get(memberId) as { total: number };
 
     // Estudos no mês (últimos 30 dias)
-    const estudosNoMes = this.db
+    const estudosNoMes = db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-30 days')")
       .get(memberId) as { total: number };
 
     // Estudos no trimestre (últimos 90 dias)
-    const estudosNoTrimestre = this.db
+    const estudosNoTrimestre = db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-90 days')")
       .get(memberId) as { total: number };
 
     // Estudos no semestre (últimos 180 dias)
-    const estudosNoSemestre = this.db
+    const estudosNoSemestre = db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-180 days')")
       .get(memberId) as { total: number };
 
     // Estudos no ano (últimos 365 dias)
-    const estudosNoAno = this.db
+    const estudosNoAno = db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-365 days')")
       .get(memberId) as { total: number };
 
     // Músicas diferentes estudadas na semana
-    const musicasDiferentesSemana = this.db
+    const musicasDiferentesSemana = db
       .prepare("SELECT COUNT(DISTINCT repertoire_item_id) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-7 days')")
       .get(memberId) as { total: number };
 
     // Músicas diferentes estudadas no mês
-    const musicasDiferentesMes = this.db
+    const musicasDiferentesMes = db
       .prepare("SELECT COUNT(DISTINCT repertoire_item_id) as total FROM study_logs WHERE member_id = ? AND data >= date('now', '-30 days')")
       .get(memberId) as { total: number };
 

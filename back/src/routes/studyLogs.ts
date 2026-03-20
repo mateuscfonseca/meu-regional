@@ -58,16 +58,14 @@ studyLogsRoutes.get('/member/:memberId/stats', async (c) => {
 studyLogsRoutes.delete('/:id', async (c) => {
   const id = c.req.param('id');
   const logId = parseInt(id);
-  
+
   // Verificar se o log existe
-  const existingLog = (studyLogsService as any).db
-    .prepare('SELECT id FROM study_logs WHERE id = ?')
-    .get(logId);
-  
+  const existingLog = await studyLogsService.findById(logId);
+
   if (!existingLog) {
     return c.json({ error: 'Registro de estudo não encontrado' }, 404);
   }
-  
+
   await studyLogsService.delete(logId);
   return c.json({ success: true });
 });

@@ -65,7 +65,7 @@ export class PracticeGroupService {
   async getGroupStats(memberId: number): Promise<GroupPracticeStats> {
     // Total de ensaios (estudos em grupo)
     const totalEnsaios = this.db
-      .prepare('SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND tipo = ?', 'grupo')
+      .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND tipo = 'grupo'")
       .get(memberId) as { total: number };
 
     // Tempo total estudado em grupo
