@@ -68,11 +68,8 @@ export function useRepertoire() {
       
       const queryString = params.toString()
       const url = `/repertoire/regional/${regionalId}${queryString ? '?' + queryString : ''}`
-      
-      console.log('[useRepertoire] loadRepertoire - URL:', url)
-      
+
       const response = await api.get(url)
-      console.log('[useRepertoire] loadRepertoire - Response:', response.data)
       items.value = response.data.items
       return response.data.items
     } catch (err: any) {

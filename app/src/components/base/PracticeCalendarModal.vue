@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     v-model="isOpen"
-    title="Repertório do Ensaio"
+    title="Estudos do Dia"
     :subtitle="formattedDate"
     size="md"
     @close="handleClose"
@@ -20,16 +20,17 @@
       <div
         v-for="(practice, index) in practices"
         :key="practice.id"
-        class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+        class="flex items-start gap-3 p-3 rounded-lg border"
+        :class="practice.tipo === 'grupo' ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200'"
       >
         <!-- Ícone do tipo -->
         <div
           class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-          :class="practice.tipo === 'grupo' ? 'bg-green-100' : 'bg-blue-100'"
+          :class="practice.tipo === 'grupo' ? 'bg-green-100' : 'bg-purple-100'"
         >
           <span
             class="mdi"
-            :class="practice.tipo === 'grupo' ? 'mdi-account-group text-green-600' : 'mdi-account text-blue-600'"
+            :class="practice.tipo === 'grupo' ? 'mdi-account-group text-green-600' : 'mdi-account text-purple-600'"
           ></span>
         </div>
 
@@ -61,7 +62,7 @@
           class="px-2 py-1 text-xs font-medium rounded-full flex-shrink-0"
           :class="practice.tipo === 'grupo'
             ? 'bg-green-100 text-green-700'
-            : 'bg-blue-100 text-blue-700'"
+            : 'bg-purple-100 text-purple-700'"
         >
           {{ practice.tipo === 'grupo' ? 'Grupo' : 'Individual' }}
         </span>

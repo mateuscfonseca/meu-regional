@@ -8,6 +8,8 @@
     <!-- Calendário de Ensaios -->
     <CalendarWidget
       :member-id="user?.id || 0"
+      title="Calendário de Ensaios"
+      filter-type="grupo"
       @select-date="openPracticeModal"
       class="mb-6"
     />

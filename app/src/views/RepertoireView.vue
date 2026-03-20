@@ -281,11 +281,11 @@
           </a>
         </div>
 
-        <!-- Notas pessoais -->
-        <div v-if="(item as any).member_data?.notas_pessoais" class="mb-3 p-2 bg-yellow-50 rounded-lg border border-yellow-100">
+        <!-- Notas gerais -->
+        <div v-if="item.notas && item.notas.trim()" class="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-100">
           <div class="flex items-start gap-2">
-            <span class="mdi mdi-note-edit text-yellow-600 text-xs mt-0.5"></span>
-            <p class="text-xs text-gray-700 line-clamp-2">{{ (item as any).member_data.notas_pessoais }}</p>
+            <span class="mdi mdi-note-text text-blue-600 text-xs mt-0.5"></span>
+            <p class="text-xs text-gray-700 line-clamp-2">{{ item.notas }}</p>
           </div>
         </div>
 
@@ -857,20 +857,11 @@ function getLinkIcon(url: string): string {
 }
 
 onMounted(() => {
-  console.log('[RepertoireView] onMounted - User:', user)
-  
   if (user?.regional_id && user?.id) {
-    // Sempre carregar repertório com dados de proficiência do usuário
-    console.log('[RepertoireView] Carregando repertório para regional:', user.regional_id, 'member:', user.id)
     loadRepertoire(user.regional_id, user.id)
-      .then(() => {
-        console.log('[RepertoireView] Repertório carregado com sucesso')
-      })
       .catch(err => {
         console.error('[RepertoireView] Erro ao carregar repertório:', err)
       })
-  } else {
-    console.error('[RepertoireView] Usuário não autenticado ou sem regional')
   }
 })
 </script>

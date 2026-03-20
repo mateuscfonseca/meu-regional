@@ -66,6 +66,14 @@
         </button>
       </div>
 
+      <!-- Calendário de Ensaios -->
+      <CalendarWidget
+        :member-id="user?.id || 0"
+        title="Calendário de Ensaios"
+        :filter-type="filterType"
+        @select-date="openPracticeModal"
+      />
+
       <!-- Cards de Estatísticas Gerais -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total de Músicas -->
@@ -153,14 +161,6 @@
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
         </div>
-      </div>
-
-      <!-- Calendário de Ensaios (apenas para Grupo ou Todos) -->
-      <div v-if="filterType === 'grupo' || filterType === 'todos'">
-        <CalendarWidget
-          :member-id="user?.id || 0"
-          @select-date="openPracticeModal"
-        />
       </div>
 
       <!-- Músicas Diferentes por Período -->

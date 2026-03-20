@@ -3,8 +3,10 @@ import api from '../services/api'
 
 export interface CalendarDay {
   day: number
-  has_practice: boolean
-  practice_count: number
+  has_individual: boolean
+  has_grupo: boolean
+  individual_count: number
+  grupo_count: number
   is_today: boolean
 }
 

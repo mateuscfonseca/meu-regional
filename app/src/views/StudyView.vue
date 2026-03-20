@@ -19,7 +19,7 @@
       <button
         @click="filterType = 'individual'"
         :class="filterType === 'individual'
-          ? 'bg-blue-600 text-white'
+          ? 'bg-purple-600 text-white'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
         class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
       >
@@ -29,7 +29,7 @@
       <button
         @click="filterType = 'grupo'"
         :class="filterType === 'grupo'
-          ? 'bg-blue-600 text-white'
+          ? 'bg-green-600 text-white'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
         class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
       >
@@ -37,6 +37,14 @@
         Grupo
       </button>
     </div>
+
+    <!-- Calendário de Estudos -->
+    <CalendarWidget
+      :member-id="user?.id || 0"
+      :filter-type="filterType"
+      @select-date="openPracticeModal"
+      class="mb-6"
+    />
 
     <!-- Estudos de Hoje -->
     <div v-if="estudosHoje.length > 0" class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow p-4 sm:p-6 mb-6 border-2 border-blue-200">
@@ -273,6 +281,13 @@
         </button>
       </template>
     </BaseModal>
+
+    <!-- Modal de Práticas por Data -->
+    <PracticeCalendarModal
+      v-model="showPracticeModal"
+      :member-id="user?.id || 0"
+      :date="selectedPracticeDate"
+    />
   </div>
 </template>
 
@@ -280,7 +295,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useStudyLogs } from '../composables/useStudyLogs'
-import BaseModal from '../components/base/BaseModal.vue'
+import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
+import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
 
 const { state } = useAuth()
 const { logs, stats, loadLogs, loadStats, formatDate, deleteLog } = useStudyLogs()
@@ -290,6 +306,13 @@ const logsLimit = ref(10)
 const showDeleteModal = ref(false)
 const logToDelete = ref<any>(null)
 const filterType = ref<'todos' | 'individual' | 'grupo'>('todos')
+const showPracticeModal = ref(false)
+const selectedPracticeDate = ref<string | null>(null)
+
+function openPracticeModal(date: string) {
+  selectedPracticeDate.value = date
+  showPracticeModal.value = true
+}
 
 // Estudos de hoje
 const estudosHoje = computed(() => {

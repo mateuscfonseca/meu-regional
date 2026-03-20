@@ -8,8 +8,10 @@ import { getDb } from '../db-provider';
 
 export interface CalendarDayData {
   day: number;
-  has_practice: boolean;
-  practice_count: number;
+  has_individual: boolean;
+  has_grupo: boolean;
+  individual_count: number;
+  grupo_count: number;
   is_today: boolean;
 }
 
@@ -27,41 +29,41 @@ export class PracticeCalendarService {
   }
 
   /**
-   * Busca dados do calendário de práticas em grupo para um mês específico
-   * Retorna apenas dias que tiveram práticas (tipo='grupo')
+   * Busca dados do calendário de práticas para um mês específico
+   * Retorna dias com estudos individuais e em grupo
    */
   async getCalendarData(memberId: number, year: number, month: number): Promise<CalendarMonthData> {
     // Primeiros e últimos dias do mês
     const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
-    
+
     // Último dia do mês
     const lastDayQuery = this.db
       .prepare("SELECT date(?, '+1 month', '-1 day') as last_day")
       .get(firstDay) as { last_day: string };
-    
+
     const lastDay = lastDayQuery.last_day;
     const lastDayNum = parseInt(lastDay.split('-')[2]);
 
-    // Buscar dias com práticas em grupo no mês
+    // Buscar dias com práticas (individual e grupo) no mês
     const practicesQuery = this.db
       .prepare(`
-        SELECT 
+        SELECT
           CAST(strftime('%d', data) AS INTEGER) as day,
-          COUNT(*) as practice_count
+          SUM(CASE WHEN tipo = 'individual' THEN 1 ELSE 0 END) as individual_count,
+          SUM(CASE WHEN tipo = 'grupo' THEN 1 ELSE 0 END) as grupo_count
         FROM study_logs
-        WHERE member_id = ? 
-          AND tipo = 'grupo'
+        WHERE member_id = ?
           AND data >= ?
           AND data <= ?
         GROUP BY day
         ORDER BY day
       `)
-      .all(memberId, firstDay, lastDay) as { day: number; practice_count: number }[];
+      .all(memberId, firstDay, lastDay) as { day: number; individual_count: number; grupo_count: number }[];
 
     // Criar mapa de dias com práticas
-    const practiceDaysMap = new Map<number, number>();
+    const practiceDaysMap = new Map<{ individual: number; grupo: number }>();
     practicesQuery.forEach(p => {
-      practiceDaysMap.set(p.day, p.practice_count);
+      practiceDaysMap.set(p.day, { individual: p.individual_count, grupo: p.grupo_count });
     });
 
     // Obter data de hoje para marcar o dia atual
@@ -72,11 +74,13 @@ export class PracticeCalendarService {
     // Gerar todos os dias do mês
     const days: CalendarDayData[] = [];
     for (let day = 1; day <= lastDayNum; day++) {
-      const practiceCount = practiceDaysMap.get(day) || 0;
+      const counts = practiceDaysMap.get(day) || { individual: 0, grupo: 0 };
       days.push({
         day,
-        has_practice: practiceCount > 0,
-        practice_count: practiceCount,
+        has_individual: counts.individual > 0,
+        has_grupo: counts.grupo > 0,
+        individual_count: counts.individual,
+        grupo_count: counts.grupo,
         is_today: day === todayDay,
       });
     }
