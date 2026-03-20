@@ -5,6 +5,13 @@
       Práticas de Grupo (Ensaios)
     </h2>
 
+    <!-- Calendário de Ensaios -->
+    <CalendarWidget
+      :member-id="user?.id || 0"
+      @select-date="openPracticeModal"
+      class="mb-6"
+    />
+
     <!-- Estatísticas -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
       <div class="bg-white rounded-lg shadow p-4 sm:p-6">
@@ -215,6 +222,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Práticas por Data -->
+    <PracticeCalendarModal
+      v-model="showPracticeModal"
+      :member-id="user?.id || 0"
+      :date="selectedPracticeDate"
+    />
   </div>
 </template>
 
@@ -222,12 +236,21 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useGroupPractice } from '../composables/useGroupPractice'
+import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
+import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
 
 const { state } = useAuth()
 const { logs, stats, loadLogs, loadStats, formatDate } = useGroupPractice()
 
 const user = state.user
 const logsLimit = ref(10)
+const showPracticeModal = ref(false)
+const selectedPracticeDate = ref<string | null>(null)
+
+function openPracticeModal(date: string) {
+  selectedPracticeDate.value = date
+  showPracticeModal.value = true
+}
 
 async function loadData() {
   if (!user?.id || !user?.regional_id) return
