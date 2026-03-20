@@ -38,11 +38,11 @@ describe('Study Logs Routes', () => {
         (2, 1, 'Tico-Tico no Fubá', 'Zequinha de Abreu'),
         (3, 1, 'Odeon', 'Ernesto Nazareth');
 
-      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, estudado_em, data)
+      INSERT INTO study_logs (member_id, repertoire_item_id, tipo, notas, estudado_em, data)
       VALUES
-        (1, 1, 'individual', 30, 'Estudo focado na introdução', '2025-01-10 10:00:00', '2025-01-10'),
-        (1, 2, 'individual', 45, 'Prática de tercas', '2025-01-09 11:00:00', '2025-01-09'),
-        (1, 1, 'grupo', 60, 'Ensemble com o grupo', '2025-01-08 14:00:00', '2025-01-08');
+        (1, 1, 'individual', 'Estudo focado na introdução', '2025-01-10 10:00:00', '2025-01-10'),
+        (1, 2, 'individual', 'Prática de tercas', '2025-01-09 11:00:00', '2025-01-09'),
+        (1, 1, 'grupo', 'Ensemble com o grupo', '2025-01-08 14:00:00', '2025-01-08');
     `);
 
     app = new Hono();
@@ -115,7 +115,6 @@ describe('Study Logs Routes', () => {
         member_id: 1,
         repertoire_item_id: 1,
         tipo: 'individual',
-        duracao_minutos: 30,
         notas: 'Teste de estudo',
         data: '2025-01-11',
       };
@@ -132,7 +131,6 @@ describe('Study Logs Routes', () => {
       expect(data.log.member_id).toBe(1);
       expect(data.log.repertoire_item_id).toBe(1);
       expect(data.log.tipo).toBe('individual');
-      expect(data.log.duracao_minutos).toBe(30);
     });
 
     it('deve criar log com campos opcionais', async () => {
@@ -152,7 +150,6 @@ describe('Study Logs Routes', () => {
 
       expect(response.status).toBe(201);
       expect(data.log.tipo).toBe('grupo');
-      expect(data.log.duracao_minutos).toBeNull();
       expect(data.log.notas).toBeNull();
     });
 

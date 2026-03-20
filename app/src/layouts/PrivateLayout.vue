@@ -142,7 +142,6 @@ async function handleLogStudy(data: {
   member_id: number
   repertoire_item_id: number
   tipo: 'individual' | 'grupo'
-  duracao_minutos?: number
   notas?: string
   data?: string
   nivel_fluencia?: string

@@ -6,7 +6,6 @@ export interface StudyLog {
   member_id: number
   repertoire_item_id: number
   tipo: 'individual' | 'grupo'
-  duracao_minutos: number | null
   notas: string | null
   data: string
   estudado_em: string
@@ -17,7 +16,6 @@ export interface StudyLog {
 
 export interface StudyStats {
   total_estudos: number
-  tempo_total_minutos: number
   estudos_por_tipo: { tipo: string; total: number }[]
   musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[]
   // Frequência por período
@@ -72,7 +70,6 @@ export function useStudyLogs() {
     member_id: number
     repertoire_item_id: number
     tipo: 'individual' | 'grupo'
-    duracao_minutos?: number
     notas?: string
     data?: string
   }) {

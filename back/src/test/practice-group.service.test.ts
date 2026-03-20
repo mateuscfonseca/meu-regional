@@ -47,20 +47,20 @@ describe('PracticeGroupService', () => {
 
       // Inserir estudos em grupo (tipo='grupo')
       testDb.run(`
-        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, notas, data)
         VALUES
-          (1, 1, 'grupo', 60, 'Ensaio focado na introdução', date('now', '-1 day')),
-          (1, 2, 'grupo', 45, 'Ensaio completo', date('now', '-1 day')),
-          (1, 1, 'grupo', 30, 'Revisão', date('now', '-7 days')),
-          (1, 3, 'grupo', 90, 'Ensaio longo', date('now', '-15 days')),
-          (1, 2, 'grupo', 60, 'Ensaio', date('now', '-45 days')),
-          (1, 1, 'grupo', 40, 'Ensaio antigo', date('now', '-200 days'));
+          (1, 1, 'grupo', 'Ensaio focado na introdução', date('now', '-1 day')),
+          (1, 2, 'grupo', 'Ensaio completo', date('now', '-1 day')),
+          (1, 1, 'grupo', 'Revisão', date('now', '-7 days')),
+          (1, 3, 'grupo', 'Ensaio longo', date('now', '-15 days')),
+          (1, 2, 'grupo', 'Ensaio', date('now', '-45 days')),
+          (1, 1, 'grupo', 'Ensaio antigo', date('now', '-200 days'));
       `);
 
       // Inserir estudo individual (não deve ser contado)
       testDb.run(`
-        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, data)
-        VALUES (1, 1, 'individual', 30, date('now'));
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, data)
+        VALUES (1, 1, 'individual', date('now'));
       `);
     });
 
@@ -69,7 +69,6 @@ describe('PracticeGroupService', () => {
 
       expect(stats).toBeDefined();
       expect(stats.total_ensaios).toBe(6); // 6 estudos em grupo
-      expect(stats.tempo_total_minutos).toBe(325); // 60+45+30+90+60+40
     });
 
     it('deve retornar ensaios na semana (últimos 7 dias)', async () => {
@@ -160,10 +159,10 @@ describe('PracticeGroupService', () => {
       `);
 
       testDb.run(`
-        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, notas, data)
         VALUES
-          (1, 1, 'grupo', 60, 'Ensaio 1', date('now', '-1 day')),
-          (1, 1, 'grupo', 45, 'Ensaio 2', date('now', '-2 days'));
+          (1, 1, 'grupo', 'Ensaio 1', date('now', '-1 day')),
+          (1, 1, 'grupo', 'Ensaio 2', date('now', '-2 days'));
       `);
     });
 
@@ -196,10 +195,10 @@ describe('PracticeGroupService', () => {
       const today = new Date().toISOString().split('T')[0];
 
       testDb.run(`
-        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, duracao_minutos, notas, data)
+        INSERT INTO study_logs (member_id, repertoire_item_id, tipo, notas, data)
         VALUES
-          (1, 1, 'grupo', 60, 'Ensaio em grupo', '${today}'),
-          (1, 1, 'individual', 30, 'Estudo individual', '${today}');
+          (1, 1, 'grupo', 'Ensaio em grupo', '${today}'),
+          (1, 1, 'individual', 'Estudo individual', '${today}');
       `);
     });
 

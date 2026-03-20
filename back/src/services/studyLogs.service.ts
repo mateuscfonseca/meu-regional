@@ -22,7 +22,6 @@ export interface StudyLog {
 
 export interface StudyStats {
   total_estudos: number;
-  tempo_total_minutos: number;
   estudos_por_tipo: { tipo: string; total: number }[];
   musicas_mais_estudadas: { nome: string; autor: string | null; total_estudos: number }[];
   // Frequência por período
@@ -179,11 +178,6 @@ export class StudyLogsService {
       .prepare('SELECT COUNT(*) as total FROM study_logs WHERE member_id = ?')
       .get(memberId) as { total: number };
 
-    // Tempo total estudado
-    const tempoTotal = db
-      .prepare('SELECT COALESCE(SUM(duracao_minutos), 0) as total FROM study_logs WHERE member_id = ? AND duracao_minutos IS NOT NULL')
-      .get(memberId) as { total: number };
-
     // Estudos por tipo
     const estudosPorTipo = db
       .prepare(`
@@ -244,7 +238,6 @@ export class StudyLogsService {
 
     return {
       total_estudos: totalEstudos.total,
-      tempo_total_minutos: tempoTotal.total,
       estudos_por_tipo: estudosPorTipo,
       musicas_mais_estudadas: musicasMaisEstudadas,
       estudos_na_semana: estudosNaSemana.total,

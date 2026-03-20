@@ -6,7 +6,6 @@ export interface GroupPracticeLog {
   member_id: number
   repertoire_item_id: number
   tipo: 'grupo'
-  duracao_minutos: number | null
   notas: string | null
   data: string
   estudado_em: string
@@ -17,7 +16,6 @@ export interface GroupPracticeLog {
 
 export interface GroupPracticeStats {
   total_ensaios: number
-  tempo_total_minutos: number
   musicas_mais_ensaiadas: { nome: string; autor: string | null; total_ensaios: number }[]
   ensaios_na_semana: number
   ensaios_no_mes: number

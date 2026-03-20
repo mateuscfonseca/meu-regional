@@ -37,13 +37,6 @@
         </div>
         <div class="text-2xl sm:text-3xl font-bold text-green-600 mt-2">{{ stats?.ensaios_no_mes || 0 }}</div>
       </div>
-      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
-        <div class="text-xs sm:text-sm text-gray-600 inline-flex items-center gap-1">
-          <span class="mdi mdi-clock"></span>
-          Tempo Total
-        </div>
-        <div class="text-2xl sm:text-3xl font-bold text-blue-600 mt-2">{{ stats?.tempo_total_minutos || 0 }}<span class="text-sm text-gray-500 ml-1">min</span></div>
-      </div>
     </div>
 
     <!-- Frequência de Ensaios -->
@@ -209,10 +202,6 @@
                 <span class="inline-flex items-center gap-1">
                   <span class="mdi mdi-account"></span>
                   {{ log.membro_nome }}
-                </span>
-                <span v-if="log.duracao_minutos" class="inline-flex items-center gap-1">
-                  <span class="mdi mdi-clock"></span>
-                  {{ log.duracao_minutos }} min
                 </span>
                 <span v-if="log.notas" class="inline-flex items-center gap-1 truncate max-w-full">
                   <span class="mdi mdi-note-text"></span>

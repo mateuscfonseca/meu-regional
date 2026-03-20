@@ -47,10 +47,6 @@
               <span class="mdi mdi-account"></span>
               {{ practice.membro_nome }}
             </span>
-            <span v-if="practice.duracao_minutos" class="flex items-center gap-1">
-              <span class="mdi mdi-clock"></span>
-              {{ practice.duracao_minutos }} min
-            </span>
           </div>
           <div v-if="practice.notas" class="text-sm text-gray-600 mt-2 italic">
             "{{ practice.notas }}"

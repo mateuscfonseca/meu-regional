@@ -8,7 +8,6 @@ import { getDb } from '../db-provider';
 
 export interface GroupPracticeStats {
   total_ensaios: number;
-  tempo_total_minutos: number;
   musicas_mais_ensaiadas: { nome: string; autor: string | null; total_ensaios: number }[];
   // Frequência por período
   ensaios_na_semana: number;
@@ -66,11 +65,6 @@ export class PracticeGroupService {
     // Total de ensaios (estudos em grupo)
     const totalEnsaios = this.db
       .prepare("SELECT COUNT(*) as total FROM study_logs WHERE member_id = ? AND tipo = 'grupo'")
-      .get(memberId) as { total: number };
-
-    // Tempo total estudado em grupo
-    const tempoTotal = this.db
-      .prepare("SELECT COALESCE(SUM(duracao_minutos), 0) as total FROM study_logs WHERE member_id = ? AND tipo = 'grupo' AND duracao_minutos IS NOT NULL")
       .get(memberId) as { total: number };
 
     // Músicas mais ensaiadas
@@ -135,7 +129,6 @@ export class PracticeGroupService {
 
     return {
       total_ensaios: totalEnsaios.total,
-      tempo_total_minutos: tempoTotal.total,
       musicas_mais_ensaiadas: musicasMaisEnsaiadas,
       ensaios_na_semana: ensaiosNaSemana.total,
       ensaios_no_mes: ensaiosNoMes.total,

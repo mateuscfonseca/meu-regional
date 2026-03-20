@@ -19,7 +19,6 @@ export interface CalendarData {
 export interface PracticeOnDate {
   id: number
   tipo: 'individual' | 'grupo'
-  duracao_minutos: number | null
   notas: string | null
   musica_nome: string
   autor: string | null
