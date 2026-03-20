@@ -112,59 +112,62 @@ status() {
 
 export_db() {
     check_dependencies
-    
+
     log_info "Exportando banco de dados..."
     cd "$DEPLOY_DIR"
-    
+
     # Descobrir path do volume
     VOLUME_PATH=$(sudo docker volume inspect meu-regional_backend_data | jq -r '.[0].Mountpoint')
-    
-    # Verificar se o banco existe
-    if [ ! -f "$VOLUME_PATH/meu-regional.db" ]; then
-        log_error "Banco de dados não encontrado em $VOLUME_PATH/meu-regional.db"
+
+    # Verificar se o banco existe (usando sudo ls com grep para pastas protegidas)
+    if ! sudo ls "$VOLUME_PATH" | grep -q "meu-regional.db"; then
+        log_error "Banco de dados não encontrado em $VOLUME_PATH"
+        log_error "Conteúdo do diretório:"
+        sudo ls -la "$VOLUME_PATH" || true
         exit 1
     fi
-    
+
     # Copiar banco para ~/
     EXPORT_FILE="$HOME/meu-regional-backup-$(date +%Y%m%d-%H%M%S).db"
     sudo cp "$VOLUME_PATH/meu-regional.db" "$EXPORT_FILE"
     sudo chown "$USER:$USER" "$EXPORT_FILE"
-    
+
     log_success "Banco exportado para: $EXPORT_FILE"
 }
 
 import_db() {
     check_dependencies
-    
+
     local DB_PATH="${1:-}"
-    
+
     if [ -z "$DB_PATH" ]; then
         log_error "Uso: ./deploy.sh import <caminho-do-banco>"
         exit 1
     fi
-    
-    if [ ! -f "$DB_PATH" ]; then
+
+    # Verificar se arquivo existe (usando ls normal para arquivo do usuário)
+    if ! ls "$DB_PATH" | grep -q "$(basename "$DB_PATH")"; then
         log_error "Arquivo não encontrado: $DB_PATH"
         exit 1
     fi
-    
+
     log_info "Importando banco de dados de: $DB_PATH"
     cd "$DEPLOY_DIR"
-    
+
     # Descobrir path do volume
     VOLUME_PATH=$(sudo docker volume inspect meu-regional_backend_data | jq -r '.[0].Mountpoint')
-    
+
     # Backup do banco atual
     BACKUP_FILE="$VOLUME_PATH/meu-regional.db.backup-$(date +%Y%m%d-%H%M%S)"
-    if [ -f "$VOLUME_PATH/meu-regional.db" ]; then
+    if sudo ls "$VOLUME_PATH" | grep -q "meu-regional.db"; then
         sudo cp "$VOLUME_PATH/meu-regional.db" "$BACKUP_FILE"
         log_info "Backup do banco atual: $BACKUP_FILE"
     fi
-    
+
     # Copiar novo banco
     sudo cp "$DB_PATH" "$VOLUME_PATH/meu-regional.db"
     sudo chown root:root "$VOLUME_PATH/meu-regional.db"
-    
+
     log_success "Banco importado com sucesso!"
     log_info "Reiniciando backend..."
     sudo docker compose restart backend

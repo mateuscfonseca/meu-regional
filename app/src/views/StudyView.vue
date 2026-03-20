@@ -5,6 +5,73 @@
       Acompanhar Estudos
     </h2>
 
+    <!-- Filtro Individual/Grupo -->
+    <div class="flex gap-2 mb-6">
+      <button
+        @click="filterType = 'todos'"
+        :class="filterType === 'todos'
+          ? 'bg-blue-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+        class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+      >
+        Todos
+      </button>
+      <button
+        @click="filterType = 'individual'"
+        :class="filterType === 'individual'
+          ? 'bg-blue-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+        class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+      >
+        <span class="mdi mdi-account mr-1"></span>
+        Individual
+      </button>
+      <button
+        @click="filterType = 'grupo'"
+        :class="filterType === 'grupo'
+          ? 'bg-blue-600 text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+        class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+      >
+        <span class="mdi mdi-account-group mr-1"></span>
+        Grupo
+      </button>
+    </div>
+
+    <!-- Estudos de Hoje -->
+    <div v-if="estudosHoje.length > 0" class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow p-4 sm:p-6 mb-6 border-2 border-blue-200">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="mdi mdi-calendar-today text-blue-600 text-xl"></span>
+        <h3 class="text-lg font-semibold text-blue-900">Estudos de Hoje</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <div class="text-xs text-gray-500">Total</div>
+          <div class="text-xl font-bold text-blue-600">{{ estudosHoje.length }}</div>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <div class="text-xs text-gray-500">Individuais</div>
+          <div class="text-lg font-bold text-purple-600">{{ estudosHoje.filter(e => e.tipo === 'individual').length }}</div>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          <div class="text-xs text-gray-500">Grupo</div>
+          <div class="text-lg font-bold text-green-600">{{ estudosHoje.filter(e => e.tipo === 'grupo').length }}</div>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-blue-200">
+        <div class="text-sm font-medium text-blue-900 mb-2">Músicas estudadas:</div>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="estudo in estudosHoje"
+            :key="estudo.id"
+            class="px-2 py-1 bg-white rounded text-xs font-medium text-gray-700 border border-blue-100"
+          >
+            {{ estudo.musica_nome }}
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- Estatísticas -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
       <div class="bg-white rounded-lg shadow p-4 sm:p-6">
@@ -116,14 +183,14 @@
         </div>
       </div>
 
-      <div v-if="logs.length === 0" class="p-8 text-center text-gray-500">
+      <div v-if="logsFiltrados.length === 0" class="p-8 text-center text-gray-500">
         <span class="mdi mdi-book-open text-4xl text-gray-300 block mb-2"></span>
         Nenhum estudo registrado ainda.
       </div>
 
       <div v-else class="divide-y divide-gray-200">
         <div
-          v-for="log in logs"
+          v-for="log in logsFiltrados"
           :key="log.id"
           class="p-4 sm:p-6 hover:bg-gray-50 transition-colors"
         >
@@ -222,6 +289,19 @@ const user = state.user
 const logsLimit = ref(10)
 const showDeleteModal = ref(false)
 const logToDelete = ref<any>(null)
+const filterType = ref<'todos' | 'individual' | 'grupo'>('todos')
+
+// Estudos de hoje
+const estudosHoje = computed(() => {
+  const hoje = new Date().toISOString().split('T')[0]
+  return logs.value.filter(log => log.data === hoje)
+})
+
+// Logs filtrados por tipo
+const logsFiltrados = computed(() => {
+  if (filterType.value === 'todos') return logs.value
+  return logs.value.filter(log => log.tipo === filterType.value)
+})
 
 const individualCount = computed(() => {
   const individual = stats.value?.estudos_por_tipo?.find((e: any) => e.tipo === 'individual')

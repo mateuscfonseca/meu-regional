@@ -33,6 +33,39 @@
     </div>
 
     <div v-else class="space-y-6">
+      <!-- Filtro Individual/Grupo/Todos -->
+      <div class="flex gap-2">
+        <button
+          @click="filterType = 'todos'"
+          :class="filterType === 'todos'
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+        >
+          Todos
+        </button>
+        <button
+          @click="filterType = 'individual'"
+          :class="filterType === 'individual'
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+        >
+          <span class="mdi mdi-account mr-1"></span>
+          Individual
+        </button>
+        <button
+          @click="filterType = 'grupo'"
+          :class="filterType === 'grupo'
+            ? 'bg-blue-600 text-white'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          class="px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+        >
+          <span class="mdi mdi-account-group mr-1"></span>
+          Grupo
+        </button>
+      </div>
+
       <!-- Cards de Estatísticas Gerais -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Total de Músicas -->
@@ -120,6 +153,14 @@
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
         </div>
+      </div>
+
+      <!-- Calendário de Ensaios (apenas para Grupo ou Todos) -->
+      <div v-if="filterType === 'grupo' || filterType === 'todos'">
+        <CalendarWidget
+          :member-id="user?.id || 0"
+          @select-date="openPracticeModal"
+        />
       </div>
 
       <!-- Músicas Diferentes por Período -->
@@ -280,6 +321,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Práticas por Data -->
+    <PracticeCalendarModal
+      v-model="showPracticeModal"
+      :member-id="user?.id || 0"
+      :date="selectedPracticeDate"
+    />
   </div>
 </template>
 
@@ -288,13 +336,19 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useRepertoire } from '../composables/useRepertoire'
 import { useStudyLogs, type StudyLog } from '../composables/useStudyLogs'
+import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
+import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
 
 const { state: authState } = useAuth()
 const { items: repertoire, loadRepertoire } = useRepertoire()
 const { stats, loadStats, logs, loadLogs } = useStudyLogs()
 
+const user = authState.user
 const loading = ref(false)
 const loaded = ref(false)
+const filterType = ref<'todos' | 'individual' | 'grupo'>('todos')
+const showPracticeModal = ref(false)
+const selectedPracticeDate = ref<string | null>(null)
 
 // Carregar todos os dados
 async function loadAllData() {
@@ -315,19 +369,48 @@ async function loadAllData() {
   }
 }
 
+function openPracticeModal(date: string) {
+  selectedPracticeDate.value = date
+  showPracticeModal.value = true
+}
+
 // Verificar se tem dados
 const hasData = computed(() => repertoire.value.length > 0)
 
 // Estatísticas gerais
 const totalMusicas = computed(() => repertoire.value.length)
-const totalEstudos = computed(() => stats.value?.total_estudos || 0)
+const totalEstudos = computed(() => {
+  if (filterType.value === 'todos') return stats.value?.total_estudos || 0
+  
+  // Filtrar por tipo
+  const tipo = filterType.value === 'individual' ? 'individual' : 'grupo'
+  const estudoTipo = stats.value?.estudos_por_tipo?.find(e => e.tipo === tipo)
+  return estudoTipo?.total || 0
+})
 
-// Frequência de estudos por período
-const estudosNaSemana = computed(() => stats.value?.estudos_na_semana || 0)
-const estudosNoMes = computed(() => stats.value?.estudos_no_mes || 0)
-const estudosNoTrimestre = computed(() => stats.value?.estudos_no_trimestre || 0)
-const estudosNoSemestre = computed(() => stats.value?.estudos_no_semestre || 0)
-const estudosNoAno = computed(() => stats.value?.estudos_no_ano || 0)
+// Frequência de estudos por período (filtrada por tipo)
+const estudosNaSemana = computed(() => {
+  // Nota: idealmente teríamos estatísticas separadas por tipo no backend
+  // Por enquanto, usamos as estatísticas gerais para 'todos' e 'individual'
+  if (filterType.value === 'grupo') return 0
+  return stats.value?.estudos_na_semana || 0
+})
+const estudosNoMes = computed(() => {
+  if (filterType.value === 'grupo') return 0
+  return stats.value?.estudos_no_mes || 0
+})
+const estudosNoTrimestre = computed(() => {
+  if (filterType.value === 'grupo') return 0
+  return stats.value?.estudos_no_trimestre || 0
+})
+const estudosNoSemestre = computed(() => {
+  if (filterType.value === 'grupo') return 0
+  return stats.value?.estudos_no_semestre || 0
+})
+const estudosNoAno = computed(() => {
+  if (filterType.value === 'grupo') return 0
+  return stats.value?.estudos_no_ano || 0
+})
 
 // Músicas diferentes por período
 const musicasDiferentesSemana = computed(() => stats.value?.musicas_diferentes_estudadas_semana || 0)
@@ -406,10 +489,29 @@ function getMedalClass(index: number): string {
   return 'bg-gray-300'
 }
 
-// Últimos estudos
-const ultimosEstudos = computed(() =>
-  logs.value.slice(0, 5) as StudyLog[]
-)
+// Últimos estudos (filtrados por tipo)
+const ultimosEstudos = computed(() => {
+  let filteredLogs = logs.value
+  if (filterType.value === 'individual') {
+    filteredLogs = logs.value.filter(log => log.tipo === 'individual')
+  } else if (filterType.value === 'grupo') {
+    filteredLogs = logs.value.filter(log => log.tipo === 'grupo')
+  }
+  return filteredLogs.slice(0, 5) as StudyLog[]
+})
+
+// Estatísticas filtradas por tipo
+const estudosFiltrados = computed(() => {
+  if (!stats.value) return null
+
+  if (filterType.value === 'todos') {
+    return stats.value
+  }
+
+  // Para filtros individual/grupo, precisamos buscar estatísticas específicas
+  // Por enquanto, retornamos as estatísticas gerais (o ideal seria ter endpoints separados)
+  return stats.value
+})
 
 function formatarData(dataStr: string): string {
   return new Date(dataStr).toLocaleDateString('pt-BR', {

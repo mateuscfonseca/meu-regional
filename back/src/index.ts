@@ -10,6 +10,8 @@ import { repertoireRoutes } from './routes/repertoire';
 import { memberRepertoireRoutes } from './routes/member-repertoire';
 import { selectionsRoutes } from './routes/selections';
 import { studyLogsRoutes } from './routes/studyLogs';
+import { practiceGroupRoutes } from './routes/practice-group';
+import { practiceCalendarRoutes } from './routes/practice-calendar';
 import { scraperRoutes } from './routes/scraper';
 import { authorsRoutes } from './routes/authors';
 
@@ -51,6 +53,8 @@ app.route('/api/repertoire', repertoireRoutes);
 app.route('/api/member-repertoire', memberRepertoireRoutes);
 app.route('/api/selections', selectionsRoutes);
 app.route('/api/study-logs', studyLogsRoutes);
+app.route('/api/practice-group', practiceGroupRoutes);
+app.route('/api/practice-calendar', practiceCalendarRoutes);
 app.route('/api/scraper', scraperRoutes);
 app.route('/api/authors', authorsRoutes);
 

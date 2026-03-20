@@ -229,9 +229,12 @@
             {{ item.tonalidade }}
           </span>
           <span
+            @click="openNivelModal(item)"
             :class="getNivelFluenciaClass((item as any).member_data?.nivel_fluencia || 'precisa_aprender')"
-            class="px-2 py-0.5 text-xs rounded font-medium"
+            class="px-2 py-0.5 text-xs rounded font-medium cursor-pointer hover:opacity-80 transition-opacity"
+            title="Clique para editar o nível"
           >
+            <span class="mdi mdi-pencil-outline mr-0.5"></span>
             {{ getNivelFluenciaLabel((item as any).member_data?.nivel_fluencia || 'precisa_aprender') }}
           </span>
         </div>
@@ -265,7 +268,7 @@
         </div>
 
         <!-- Links -->
-        <div v-if="parseLinks(item.links as any).length > 0" class="flex flex-wrap gap-2 mb-4">
+        <div v-if="parseLinks(item.links as any).length > 0" class="flex flex-wrap gap-2 mb-3">
           <a
             v-for="(link, idx) in parseLinks(item.links as any)"
             :key="idx"
@@ -276,6 +279,14 @@
             <span :class="getLinkIcon(link) + ' w-3 h-3'"></span>
             <span class="hidden sm:inline">{{ getLinkLabel(link) }}</span>
           </a>
+        </div>
+
+        <!-- Notas pessoais -->
+        <div v-if="(item as any).member_data?.notas_pessoais" class="mb-3 p-2 bg-yellow-50 rounded-lg border border-yellow-100">
+          <div class="flex items-start gap-2">
+            <span class="mdi mdi-note-edit text-yellow-600 text-xs mt-0.5"></span>
+            <p class="text-xs text-gray-700 line-clamp-2">{{ (item as any).member_data.notas_pessoais }}</p>
+          </div>
         </div>
 
         <!-- Ações -->
@@ -307,6 +318,12 @@
     </div>
 
     <!-- Modais -->
+    <EditNivelModal
+      v-model="showNivelModal"
+      :item="editingNivelItem"
+      @save="handleSaveNivel"
+    />
+
     <AddMusicModal
       v-model="showAddModal"
       @submit="handleAddMusic"
@@ -342,6 +359,7 @@ import { memberRepertoireService } from '../services/memberRepertoire'
 import AddMusicModal from '../components/base/AddMusicModal.vue'
 import EditMusicSequentialModal from '../components/base/EditMusicSequentialModal.vue'
 import ImportListModal from '../components/base/ImportListModal.vue'
+import EditNivelModal from '../components/base/EditNivelModal.vue'
 
 const auth = useAuth()
 const user = auth.state.user
@@ -352,7 +370,9 @@ const { initializeIfNeeded } = useMemberRepertoire()
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showImportModal = ref(false)
+const showNivelModal = ref(false)
 const editingItem = ref<RepertoireItem | null>(null)
+const editingNivelItem = ref<RepertoireItem | null>(null)
 
 // Estado para edição em sequência
 const editingIndex = ref<number>(-1)
@@ -539,6 +559,33 @@ function getNivelFluenciaLabel(nivel: string): string {
   return nivelObj?.label || nivel
 }
 
+function openNivelModal(item: RepertoireItem) {
+  editingNivelItem.value = item
+  showNivelModal.value = true
+}
+
+async function handleSaveNivel(data: { id: number; nivel_fluencia: string }) {
+  try {
+    // Inicializar registro em member_repertoire se não existir
+    await initializeIfNeeded(data.id)
+
+    // Atualizar apenas o nível de fluência
+    await updateMemberPracticeFields(data.id, {
+      nivel_fluencia: data.nivel_fluencia,
+    })
+
+    // Recarrega o repertório para pegar os dados atualizados
+    if (user?.regional_id && user?.id) {
+      loadingRepertoire.value = true
+      await loadRepertoire(user.regional_id, user.id)
+      loadingRepertoire.value = false
+    }
+  } catch (err: any) {
+    console.error('Erro ao atualizar nível:', err)
+    alert(err.response?.data?.error || 'Erro ao atualizar nível')
+  }
+}
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -555,8 +602,8 @@ async function handleAddMusic(data: { nome: string; autor?: string; links?: stri
       ...data,
     })
 
-    if (user?.regional_id) {
-      await loadRepertoire(user.regional_id)
+    if (user?.regional_id && user?.id) {
+      await loadRepertoire(user.regional_id, user.id)
     }
     showAddModal.value = false
   } catch (err: any) {

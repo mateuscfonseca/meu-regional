@@ -181,6 +181,7 @@ const navLinks = [
   { to: '/repertoire', label: 'Repertório', icon: 'mdi mdi-music-box' },
   { to: '/selections', label: 'Seleções', icon: 'mdi mdi-playlist-play' },
   { to: '/study', label: 'Estudos', icon: 'mdi mdi-school' },
+  { to: '/practice', label: 'Ensaios', icon: 'mdi mdi-account-group' },
   { to: '/members', label: 'Membros', icon: 'mdi mdi-account-group' },
   { to: '/integrations', label: 'Integrações', icon: 'mdi mdi-puzzle' }
 ]
