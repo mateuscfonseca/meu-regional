@@ -136,6 +136,40 @@ export class StudyLogsService {
   }
 
   /**
+   * Atualiza data do estudo
+   */
+  async updateDate(id: number, data: string): Promise<StudyLog> {
+    const db = getDb();
+    
+    // Atualizar a data
+    db.prepare('UPDATE study_logs SET data = ? WHERE id = ?').run(data, id);
+    
+    // Buscar o log atualizado
+    const log = db
+      .prepare('SELECT * FROM study_logs WHERE id = ?')
+      .get(id) as StudyLog | null;
+    
+    if (!log) {
+      throw new Error('Study log not found');
+    }
+    
+    // Adicionar nome da música
+    const item = db
+      .prepare('SELECT nome, autor FROM repertoire_items WHERE id = ?')
+      .get(log.repertoire_item_id) as { nome: string; autor: string | null } | null;
+    
+    if (!item) {
+      throw new Error('Repertoire item not found');
+    }
+    
+    return {
+      ...log,
+      musica_nome: item.nome,
+      autor: item.autor,
+    };
+  }
+
+  /**
    * Busca estatísticas de estudo de um membro
    */
   async getStats(memberId: number): Promise<StudyStats> {

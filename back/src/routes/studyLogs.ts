@@ -69,3 +69,35 @@ studyLogsRoutes.delete('/:id', async (c) => {
   await studyLogsService.delete(logId);
   return c.json({ success: true });
 });
+
+// Atualizar data do estudo
+studyLogsRoutes.put('/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const logId = parseInt(id);
+    const body = await c.req.json();
+    
+    // Validar apenas o campo data
+    const updateSchema = z.object({
+      data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD'),
+    });
+    
+    const validated = updateSchema.parse(body);
+
+    // Verificar se o log existe
+    const existingLog = await studyLogsService.findById(logId);
+
+    if (!existingLog) {
+      return c.json({ error: 'Registro de estudo não encontrado' }, 404);
+    }
+
+    const updatedLog = await studyLogsService.updateDate(logId, validated.data);
+    return c.json({ log: updatedLog });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return c.json({ error: error.errors }, 400);
+    }
+    console.error('Erro ao atualizar data do estudo:', error);
+    return c.json({ error: error.message || 'Erro interno do servidor' }, 500);
+  }
+});

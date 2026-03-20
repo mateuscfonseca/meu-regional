@@ -217,11 +217,22 @@
                   {{ log.tipo }}
                 </span>
 
-                <!-- Data -->
-                <span class="text-xs text-gray-500 inline-flex items-center gap-1">
-                  <span class="mdi mdi-calendar"></span>
-                  {{ formatDate(log.estudado_em) }}
-                </span>
+                <!-- Data com botão de editar -->
+                <div class="flex items-center gap-1">
+                  <span class="text-xs text-gray-500 inline-flex items-center gap-1">
+                    <span class="mdi mdi-calendar"></span>
+                    {{ formatDate(log.estudado_em) }}
+                  </span>
+                  <button
+                    @click="openEditDateModal(log)"
+                    type="button"
+                    class="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 transition-colors"
+                    aria-label="Editar data"
+                    title="Editar data"
+                  >
+                    <span class="mdi mdi-pencil text-xs"></span>
+                  </button>
+                </div>
               </div>
 
               <!-- Música -->
@@ -242,6 +253,7 @@
             <!-- Botão de excluir -->
             <button
               @click="confirmDelete(log)"
+              type="button"
               class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors self-end sm:self-center"
               aria-label="Excluir estudo"
             >
@@ -288,6 +300,13 @@
       :member-id="user?.id || 0"
       :date="selectedPracticeDate"
     />
+
+    <!-- Modal de Edição de Data -->
+    <EditDateModal
+      v-model="showEditDateModal"
+      :item="logToEdit"
+      @save="handleEditDate"
+    />
   </div>
 </template>
 
@@ -297,9 +316,11 @@ import { useAuth } from '../composables/useAuth'
 import { useStudyLogs } from '../composables/useStudyLogs'
 import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
 import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
+import BaseModal from '../components/base/BaseModal.vue'
+import EditDateModal from '../components/base/EditDateModal.vue'
 
 const { state } = useAuth()
-const { logs, stats, loadLogs, loadStats, formatDate, deleteLog } = useStudyLogs()
+const { logs, stats, loadLogs, loadStats, formatDate, deleteLog, updateLogDate } = useStudyLogs()
 
 const user = state.user
 const logsLimit = ref(10)
@@ -308,6 +329,8 @@ const logToDelete = ref<any>(null)
 const filterType = ref<'todos' | 'individual' | 'grupo'>('todos')
 const showPracticeModal = ref(false)
 const selectedPracticeDate = ref<string | null>(null)
+const showEditDateModal = ref(false)
+const logToEdit = ref<any>(null)
 
 function openPracticeModal(date: string) {
   selectedPracticeDate.value = date
@@ -366,6 +389,24 @@ async function confirmDeleteLog() {
     logToDelete.value = null
   } catch (error) {
     console.error('Erro ao excluir estudo:', error)
+  }
+}
+
+function openEditDateModal(log: any) {
+  logToEdit.value = log
+  showEditDateModal.value = true
+}
+
+async function handleEditDate(data: { id: number; data: string }) {
+  if (!user?.id) return
+  
+  try {
+    await updateLogDate(data.id, data.data, user.id)
+    showEditDateModal.value = false
+    logToEdit.value = null
+  } catch (error) {
+    console.error('Erro ao atualizar data:', error)
+    alert('Erro ao atualizar data. Tente novamente.')
   }
 }
 

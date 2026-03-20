@@ -128,6 +128,25 @@ export function useStudyLogs() {
     }
   }
 
+  async function updateLogDate(logId: number, data: string, memberId: number) {
+    error.value = null
+
+    try {
+      const response = await api.put(`/study-logs/${logId}`, { data })
+      
+      // Atualizar o log na lista
+      const index = logs.value.findIndex(log => log.id === logId)
+      if (index !== -1) {
+        logs.value[index] = response.data.log
+      }
+
+      return response.data.log
+    } catch (err: any) {
+      error.value = err.response?.data?.error || 'Erro ao atualizar data'
+      throw err
+    }
+  }
+
   function formatDate(dateStr: string, includeTime: boolean = true) {
     if (!includeTime) {
       return new Date(dateStr).toLocaleDateString('pt-BR', {
@@ -154,6 +173,7 @@ export function useStudyLogs() {
     loadStats,
     logStudy,
     deleteLog,
+    updateLogDate,
     findByRepertoire,
     formatDate
   }
