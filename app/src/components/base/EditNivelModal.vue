@@ -25,6 +25,21 @@
         <span class="font-medium">{{ getLevelLabel(selectedLevel) }}:</span>
         {{ getLevelDescription(selectedLevel) }}
       </div>
+
+      <!-- Campo de data do estudo (opcional) -->
+      <div v-if="studyLogId" class="mt-4 pt-4 border-t border-gray-200">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Data do estudo (opcional)
+        </label>
+        <input
+          v-model="selectedDate"
+          type="date"
+          class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-3 border text-base"
+        />
+        <p class="text-xs text-gray-500 mt-1">
+          Deixe vazio para manter a data atual
+        </p>
+      </div>
     </div>
 
     <template #footer>
@@ -50,6 +65,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BaseModal from './BaseModal.vue'
+import { parseDateInput } from '../../utils/date'
 
 const props = defineProps<{
   modelValue: boolean
@@ -59,15 +75,23 @@ const props = defineProps<{
       nivel_fluencia?: string
     }
   } | null
+  studyLogId?: number
+  studyLogData?: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
-  'save': [data: { id: number; nivel_fluencia: string }]
+  'save': [data: { 
+    id: number
+    nivel_fluencia: string
+    studyLogId?: number
+    data?: string
+  }]
 }>()
 
 const isOpen = ref(props.modelValue)
 const selectedLevel = ref('')
+const selectedDate = ref('')
 const saving = ref(false)
 
 const levelDescriptions: Record<string, string> = {
@@ -90,6 +114,19 @@ function getLevelLabel(level: string): string {
 function getLevelDescription(level: string): string {
   return levelDescriptions[level] || ''
 }
+
+// Watch para inicializar selectedDate quando studyLogData mudar
+watch(() => props.studyLogData, (data) => {
+  if (data) {
+    // Converter UTC "2025-03-30T03:00:00.000Z" para local "2025-03-30"
+    const date = new Date(data)
+    if (!isNaN(date.getTime())) {
+      selectedDate.value = date.toISOString().split('T')[0]
+    }
+  } else {
+    selectedDate.value = ''
+  }
+}, { immediate: true })
 
 watch(() => props.modelValue, (val) => {
   isOpen.value = val
@@ -118,7 +155,9 @@ async function handleSave() {
   try {
     emit('save', {
       id: props.item.id,
-      nivel_fluencia: selectedLevel.value
+      nivel_fluencia: selectedLevel.value,
+      studyLogId: props.studyLogId,
+      data: selectedDate.value ? parseDateInput(selectedDate.value) : undefined
     })
     handleClose()
   } finally {

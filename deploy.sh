@@ -15,7 +15,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 DEPLOY_DIR="$HOME/deploys/meu-regional"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$HOME/git/meu-regional"
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"

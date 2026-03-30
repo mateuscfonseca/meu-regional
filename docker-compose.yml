@@ -13,6 +13,13 @@ services:
       - NODE_ENV=production
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+          cpus: '0.50'
+        reservations:
+          memory: 32M
     restart: unless-stopped
 
   # ===========================================
@@ -32,6 +39,13 @@ services:
       - SCRAPER_API_URL=http://scraper:4000
       - SPOTIFY_EMAIL=${SPOTIFY_EMAIL:-}
       - SPOTIFY_PASSWORD=${SPOTIFY_PASSWORD:-}
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '1'
+        reservations:
+          memory: 128M
     depends_on:
       - scraper
     restart: unless-stopped
@@ -54,7 +68,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 256M
+          cpus: '0.50'
         reservations:
           memory: 256M
     healthcheck:

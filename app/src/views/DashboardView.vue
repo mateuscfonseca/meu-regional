@@ -135,28 +135,58 @@
       <div>
         <h2 class="text-lg font-semibold text-gray-900 mb-4">📅 Frequência de Estudos</h2>
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-sm text-gray-600 mb-1">Semana</div>
+          <div
+            @click="openFrequencyModal('semana')"
+            class="bg-white rounded-lg shadow p-4 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+          >
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="mdi mdi-calendar text-green-600 text-sm"></span>
+              <div class="text-sm text-gray-600">Semana</div>
+            </div>
             <div class="text-2xl font-bold text-green-600">{{ estudosNaSemana }}</div>
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
-          <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-sm text-gray-600 mb-1">Mês</div>
+          <div
+            @click="openFrequencyModal('mes')"
+            class="bg-white rounded-lg shadow p-4 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+          >
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="mdi mdi-calendar-month text-blue-600 text-sm"></span>
+              <div class="text-sm text-gray-600">Mês</div>
+            </div>
             <div class="text-2xl font-bold text-blue-600">{{ estudosNoMes }}</div>
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
-          <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-sm text-gray-600 mb-1">Trimestre</div>
+          <div
+            @click="openFrequencyModal('trimestre')"
+            class="bg-white rounded-lg shadow p-4 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+          >
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="mdi mdi-calendar-multiselect text-purple-600 text-sm"></span>
+              <div class="text-sm text-gray-600">Trimestre</div>
+            </div>
             <div class="text-2xl font-bold text-purple-600">{{ estudosNoTrimestre }}</div>
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
-          <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-sm text-gray-600 mb-1">Semestre</div>
+          <div
+            @click="openFrequencyModal('semestre')"
+            class="bg-white rounded-lg shadow p-4 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+          >
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="mdi mdi-calendar-range text-orange-600 text-sm"></span>
+              <div class="text-sm text-gray-600">Semestre</div>
+            </div>
             <div class="text-2xl font-bold text-orange-600">{{ estudosNoSemestre }}</div>
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
-          <div class="bg-white rounded-lg shadow p-4 text-center">
-            <div class="text-sm text-gray-600 mb-1">Ano</div>
+          <div
+            @click="openFrequencyModal('ano')"
+            class="bg-white rounded-lg shadow p-4 text-center cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+          >
+            <div class="flex items-center justify-center gap-1 mb-1">
+              <span class="mdi mdi-calendar-star text-red-600 text-sm"></span>
+              <div class="text-sm text-gray-600">Ano</div>
+            </div>
             <div class="text-2xl font-bold text-red-600">{{ estudosNoAno }}</div>
             <div class="text-xs text-gray-500 mt-1">estudos</div>
           </div>
@@ -328,6 +358,13 @@
       :member-id="user?.id || 0"
       :date="selectedPracticeDate"
     />
+
+    <!-- Modal de Frequência de Estudos -->
+    <StudyFrequencyModal
+      v-model="showFrequencyModal"
+      :periodo="selectedFrequencyPeriod"
+      :member-id="user?.id || 0"
+    />
   </div>
 </template>
 
@@ -338,6 +375,7 @@ import { useRepertoire } from '../composables/useRepertoire'
 import { useStudyLogs, type StudyLog } from '../composables/useStudyLogs'
 import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
 import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
+import StudyFrequencyModal from '../components/base/StudyFrequencyModal.vue'
 
 const { state: authState } = useAuth()
 const { items: repertoire, loadRepertoire } = useRepertoire()
@@ -349,6 +387,8 @@ const loaded = ref(false)
 const filterType = ref<'todos' | 'individual' | 'grupo'>('todos')
 const showPracticeModal = ref(false)
 const selectedPracticeDate = ref<string | null>(null)
+const showFrequencyModal = ref(false)
+const selectedFrequencyPeriod = ref<'semana' | 'mes' | 'trimestre' | 'semestre' | 'ano'>('semana')
 
 // Carregar todos os dados
 async function loadAllData() {
@@ -372,6 +412,11 @@ async function loadAllData() {
 function openPracticeModal(date: string) {
   selectedPracticeDate.value = date
   showPracticeModal.value = true
+}
+
+function openFrequencyModal(periodo: 'semana' | 'mes' | 'trimestre' | 'semestre' | 'ano') {
+  selectedFrequencyPeriod.value = periodo
+  showFrequencyModal.value = true
 }
 
 // Verificar se tem dados
