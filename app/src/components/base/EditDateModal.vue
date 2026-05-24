@@ -66,16 +66,14 @@ const saving = ref(false)
 watch(() => props.modelValue, (val) => {
   isOpen.value = val
   if (val && props.item) {
-    // Converter data para formato YYYY-MM-DD
-    const date = new Date(props.item.data)
-    selectedDate.value = date.toISOString().split('T')[0]
+    // props.item.data já é YYYY-MM-DD, usar diretamente
+    selectedDate.value = props.item.data
   }
 })
 
 watch(() => props.item, (item) => {
   if (item && isOpen.value) {
-    const date = new Date(item.data)
-    selectedDate.value = date.toISOString().split('T')[0]
+    selectedDate.value = item.data
   }
 }, { immediate: true })
 

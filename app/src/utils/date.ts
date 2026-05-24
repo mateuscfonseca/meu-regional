@@ -148,7 +148,7 @@ export function getNowUTC(): string {
 
 /**
  * Obtém a data atual no fuso local em formato YYYY-MM-DD
- * 
+ *
  * @returns String no formato YYYY-MM-DD (ex: "2025-03-30")
  */
 export function getTodayLocal(): string {
@@ -157,4 +157,24 @@ export function getTodayLocal(): string {
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const day = String(now.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+/**
+ * Formata data YYYY-MM-DD para DD/MM/YYYY sem usar new Date().
+ *
+ * Seguro para exibir datas sem risco de shift de timezone
+ * (ao contrário de new Date("YYYY-MM-DD") que interpreta
+ * como UTC meia-noite e pode deslocar em fusos negativos).
+ *
+ * Aceita tanto "YYYY-MM-DD" quanto "YYYY-MM-DD HH:mm:ss".
+ *
+ * @param dateStr - String de data
+ * @returns String formatada (ex: "30/03/2025")
+ */
+export function formatLocalDate(dateStr: string): string {
+  const datePart = dateStr.split(' ')[0]
+  const parts = datePart?.split('-')
+  if (!parts || parts.length !== 3) return dateStr
+  const [y, m, d] = parts
+  return `${d}/${m}/${y}`
 }

@@ -1,5 +1,6 @@
 import { ref, readonly } from 'vue'
 import api from '../services/api'
+import { formatLocalDate } from '../utils/date'
 
 export interface StudyLog {
   id: number
@@ -146,19 +147,16 @@ export function useStudyLogs() {
 
   function formatDate(dateStr: string, includeTime: boolean = true) {
     if (!includeTime) {
-      return new Date(dateStr).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      })
+      return formatLocalDate(dateStr)
     }
-    return new Date(dateStr).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    // dateStr pode ser "YYYY-MM-DD" (data) ou "YYYY-MM-DD HH:mm:ss" (estudado_em)
+    const datePart = dateStr.split(' ')[0]
+    const timePart = dateStr.split(' ')[1]
+    if (!datePart) return dateStr
+    const [y, m, d] = datePart.split('-')
+    if (!timePart) return `${d}/${m}/${y}`
+    const [hour, minute] = timePart.split(':')
+    return `${d}/${m}/${y} ${hour}:${minute}`
   }
 
   return {

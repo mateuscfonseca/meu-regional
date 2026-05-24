@@ -1,6 +1,9 @@
 FROM oven/bun:1 AS base
 
 WORKDIR /app
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -D appuser
+USER appuser
 
 FROM base AS builder
 # Copia arquivos de dependência primeiro (para aproveitar cache do apt)
@@ -21,6 +24,9 @@ RUN bun install --frozen
 COPY . .
 
 FROM base AS runner
+
+USER appuser
+
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
@@ -30,5 +36,8 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV SCRAPER_HEADLESS=true
+
+RUN chown -R appuser:appgroup /app && \
+    chmod -R 755 /app
 
 CMD ["bun", "run", "src/index.ts"]

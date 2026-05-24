@@ -319,6 +319,8 @@ import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
 import BaseModal from '../components/base/BaseModal.vue'
 import EditDateModal from '../components/base/EditDateModal.vue'
 
+import { getTodayLocal } from '../utils/date'
+
 const { state } = useAuth()
 const { logs, stats, loadLogs, loadStats, formatDate, deleteLog, updateLogDate } = useStudyLogs()
 
@@ -339,7 +341,7 @@ function openPracticeModal(date: string) {
 
 // Estudos de hoje
 const estudosHoje = computed(() => {
-  const hoje = new Date().toISOString().split('T')[0]
+  const hoje = getTodayLocal()
   return logs.value.filter(log => log.data === hoje)
 })
 

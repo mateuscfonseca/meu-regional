@@ -373,6 +373,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { useRepertoire } from '../composables/useRepertoire'
 import { useStudyLogs, type StudyLog } from '../composables/useStudyLogs'
+import { formatLocalDate } from '../utils/date'
 import CalendarWidget from '../components/dashboard/CalendarWidget.vue'
 import PracticeCalendarModal from '../components/base/PracticeCalendarModal.vue'
 import StudyFrequencyModal from '../components/base/StudyFrequencyModal.vue'
@@ -559,11 +560,7 @@ const estudosFiltrados = computed(() => {
 })
 
 function formatarData(dataStr: string): string {
-  return new Date(dataStr).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  return formatLocalDate(dataStr)
 }
 
 // Carregar dados ao montar

@@ -13,7 +13,16 @@ RUN bun run build
 
 # Production stage com Caddy
 FROM caddy:2-alpine
+
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -D appuser
+USER appuser
+
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv
+
+RUN chown -R appuser:appgroup /srv && \
+    chmod -R 755 /srv
+
 EXPOSE 7000
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

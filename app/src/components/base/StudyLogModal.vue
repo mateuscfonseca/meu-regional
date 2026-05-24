@@ -518,6 +518,7 @@ import { useRepertoire, type RepertoireItem } from '../../composables/useReperto
 import { useMemberRepertoire } from '../../composables/useMemberRepertoire'
 import { useMusicSuggestion, type SuggestionFilters } from '../../composables/useMusicSuggestion'
 import { memberRepertoireService } from '../../services/memberRepertoire'
+import { getTodayLocal } from '../../utils/date'
 
 interface Props {
   modelValue: boolean
@@ -557,7 +558,7 @@ const activeTab = ref<'registro' | 'sugestao'>('registro')
 const form = ref({
   repertoire_item_id: 0 as number | null,
   tipo: 'individual' as 'individual' | 'grupo',
-  data: new Date().toISOString().split('T')[0],
+  data: getTodayLocal(),
   notas: '',
 })
 
@@ -594,22 +595,29 @@ const niveisFluencia = [
 ]
 
 // Propriedades computadas para verificar se a data é hoje ou ontem
+function getYesterdayLocal(): string {
+  const now = new Date()
+  now.setDate(now.getDate() - 1)
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 const isDataHoje = computed(() => {
-  const hoje = new Date().toISOString().split('T')[0]
-  return form.value.data === hoje
+  return form.value.data === getTodayLocal()
 })
 
 const isDataOntem = computed(() => {
-  const ontem = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-  return form.value.data === ontem
+  return form.value.data === getYesterdayLocal()
 })
 
 function setDataHoje() {
-  form.value.data = new Date().toISOString().split('T')[0]
+  form.value.data = getTodayLocal()
 }
 
 function setDataOntem() {
-  form.value.data = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+  form.value.data = getYesterdayLocal()
 }
 
 watch(() => props.modelValue, (val) => {
