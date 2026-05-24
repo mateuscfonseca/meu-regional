@@ -18,92 +18,48 @@
       </span>
     </div>
 
-    <!-- Busca do Spotify -->
     <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Buscar no Spotify
-        </label>
-        <div class="flex flex-col gap-2">
+      <!-- Busca no Acervo Casa do Choro -->
+      <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 sm:p-6 border border-amber-200">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="mdi mdi-library text-amber-600 text-xl"></span>
+          <h3 class="text-base font-semibold text-amber-900">Buscar no Acervo Casa do Choro</h3>
+        </div>
+
+        <!-- Input de busca -->
+        <div class="flex gap-2 mb-3">
           <input
-            v-model="spotifySearchQuery"
+            v-model="acervoSearchQuery"
             @input="debouncedSearch"
-            @focus="showSearchResults = true"
             type="text"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
+            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 px-4 py-2 border"
             placeholder="Digite o nome da música..."
           />
           <button
-            @click="searchSpotify"
-            :disabled="searching"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors w-full"
+            @click="searchAcervo(acervoSearchQuery)"
+            :disabled="searching || acervoSearchQuery.length < 2"
+            class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-2"
           >
-            <span v-if="searching" class="animate-pulse">
-              <span class="mdi mdi-magnify"></span>
-            </span>
-            <span v-else>
-              <span class="mdi mdi-magnify"></span>
-            </span>
+            <span v-if="searching" class="mdi mdi-loading mdi-spin"></span>
+            <span v-else class="mdi mdi-magnify"></span>
+            Buscar
           </button>
         </div>
 
-        <!-- Resultados da busca -->
+        <!-- Resultados -->
         <div
-          v-if="showSearchResults && (searching || spotifyResults.length > 0)"
-          data-search-container
-          class="mt-2 border border-gray-200 rounded-lg max-h-60 overflow-hidden bg-white shadow-lg z-10"
+          v-if="acervoResults.length > 0"
+          class="border border-amber-200 rounded-lg max-h-48 overflow-y-auto bg-white"
         >
-          <!-- Estado de Loading -->
-          <div v-if="searching" class="p-4 text-center text-gray-500">
-            <span class="mdi mdi-magnify animate-pulse inline-block mr-2"></span>
-            Buscando no Spotify...
-          </div>
-          
-          <!-- Resultados -->
-          <div v-else class="max-h-48 overflow-y-auto">
-            <div
-              v-for="(result, idx) in spotifyResults"
-              :key="idx"
-              @click="selectSpotifyResult(result)"
-              class="px-4 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
-            >
-              <div class="font-medium text-gray-900">{{ result.nome }}</div>
-              <div class="text-sm text-gray-500">{{ result.autor }}</div>
-            </div>
-          </div>
-          
-          <!-- Botão Fechar -->
-          <div class="border-t border-gray-200 p-2 flex justify-end">
-            <button
-              @click="closeSearchResults"
-              class="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
-              aria-label="Fechar resultados"
-            >
-              <span class="mdi mdi-close text-lg"></span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Ou URL do Spotify -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Ou cole URL do Spotify
-        </label>
-        <div class="flex flex-col gap-2">
-          <input
-            v-model="spotifyUrl"
-            type="url"
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-4 py-2 border"
-            placeholder="https://open.spotify.com/track/..."
-          />
-          <button
-            @click="fetchSpotifyMetadata"
-            :disabled="fetchingUrl"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors w-full"
+          <div
+            v-for="(result, idx) in acervoResults"
+            :key="idx"
+            @click="selectAcervoResult(result)"
+            class="px-4 py-2 hover:bg-amber-50 cursor-pointer border-b border-amber-100 last:border-b-0 transition-colors"
           >
-            {{ fetchingUrl ? 'Extraindo...' : 'Preencher' }}
-          </button>
+            <div class="font-medium text-gray-900">{{ result.nome }}</div>
+            <div v-if="result.autor" class="text-sm text-gray-500">{{ result.autor }}</div>
+          </div>
         </div>
       </div>
 
@@ -470,7 +426,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import BaseModal from './BaseModal.vue'
-import { useScraper, type ScrapedMetadata } from '../../services/scraper'
+import { useAcervoSearch } from '../../composables/useAcervoSearch'
 import { useStudyLogs, type StudyLog } from '../../composables/useStudyLogs'
 import { useAuthors } from '../../services/authors'
 import type { RepertoireItem } from '../../composables/useRepertoire'
@@ -534,7 +490,7 @@ const emit = defineEmits<{
   'navigate-next': []
 }>()
 
-const { search: searchSpotifyApi, getMetadataByUrl } = useScraper()
+const { results: acervoResults, loading: searching, search: searchAcervo, clearResults } = useAcervoSearch()
 const { findByRepertoire, formatDate } = useStudyLogs()
 const { getSuggestions: getAuthorSuggestions } = useAuthors()
 
@@ -565,12 +521,7 @@ const showAuthorSuggestions = ref(false)
 const searchingAuthors = ref(false)
 let authorSearchTimeout: ReturnType<typeof setTimeout> | null = null
 
-const spotifySearchQuery = ref('')
-const spotifyResults = ref<ScrapedMetadata[]>([])
-const spotifyUrl = ref('')
-const searching = ref(false)
-const fetchingUrl = ref(false)
-const showSearchResults = ref(false)
+const acervoSearchQuery = ref('')
 const loading = ref(false)
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -612,9 +563,9 @@ watch(() => props.item, async (item) => {
       nivel_fluencia: (item as any).member_data?.nivel_fluencia || '',
       notas_pessoais: (item as any).member_data?.notas_pessoais || '',
     }
-    // Auto-preencher busca Spotify com o nome da música
-    spotifySearchQuery.value = item.nome
-    
+    // Auto-preencher busca com o nome da música
+    acervoSearchQuery.value = item.nome
+
     // Resetar autocompletes ao mudar de item
     clearAutocompletes()
     
@@ -647,10 +598,8 @@ function resetForm() {
     nivel_fluencia: '',
     notas_pessoais: '',
   }
-  spotifySearchQuery.value = ''
-  spotifyUrl.value = ''
-  spotifyResults.value = []
-  showSearchResults.value = false
+  acervoSearchQuery.value = ''
+  clearResults()
   loading.value = false
   studyLogs.value = []
   authorSuggestions.value = []
@@ -658,10 +607,8 @@ function resetForm() {
 }
 
 function clearAutocompletes() {
-  // Spotify
-  spotifyResults.value = []
-  showSearchResults.value = false
-  
+  clearResults()
+
   // Autor
   authorSuggestions.value = []
   showAuthorSuggestions.value = false
@@ -723,59 +670,21 @@ function handleClose() {
 function debouncedSearch() {
   if (searchTimeout) clearTimeout(searchTimeout)
 
-  if (spotifySearchQuery.value.length < 3) {
-    spotifyResults.value = []
+  if (acervoSearchQuery.value.length < 2) {
     return
   }
 
   searchTimeout = setTimeout(() => {
-    searchSpotify()
+    searchAcervo(acervoSearchQuery.value)
   }, 500)
 }
 
-async function searchSpotify() {
-  if (spotifySearchQuery.value.length < 3) return
-
-  searching.value = true
-  showSearchResults.value = true
-
-  try {
-    spotifyResults.value = await searchSpotifyApi(spotifySearchQuery.value)
-  } catch (error: any) {
-    console.error('Erro na busca:', error)
-  } finally {
-    searching.value = false
-  }
-}
-
-function selectSpotifyResult(result: ScrapedMetadata) {
+function selectAcervoResult(result: { nome: string; autor: string }) {
+  if (!props.item) return
   form.value.nome = result.nome
-  form.value.autor = result.autor
-  spotifyResults.value = []
-  spotifySearchQuery.value = result.nome
-  showSearchResults.value = false
-}
-
-function closeSearchResults() {
-  showSearchResults.value = false
-}
-
-async function fetchSpotifyMetadata() {
-  if (!spotifyUrl.value) return
-
-  fetchingUrl.value = true
-
-  try {
-    const metadata = await getMetadataByUrl(spotifyUrl.value)
-    if (metadata) {
-      form.value.nome = metadata.nome
-      form.value.autor = metadata.autor
-    }
-  } catch (error: any) {
-    console.error('Erro ao extrair metadata:', error)
-  } finally {
-    fetchingUrl.value = false
-  }
+  form.value.autor = result.autor || ''
+  clearResults()
+  acervoSearchQuery.value = result.nome
 }
 
 function prepareData() {

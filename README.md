@@ -8,7 +8,7 @@ Sistema de gestão de repertório para regionais musicais.
 
 - ✅ **Cadastro de Regional e Membros** - Crie seu regional e convide membros
 - ✅ **Gestão de Repertório** - CRUD completo com importação de listas
-- ✅ **Web Scraping Spotify** - Preenchimento automático de metadados
+- ✅ **Busca no Acervo Casa do Choro** - Preenchimento automático de metadados
 - ✅ **Criação de Seleções/Setlists** - Monte setlists para shows e ensaios
 - ✅ **Sistema de Votação** - Cada membro vota nas músicas desejadas
 - ✅ **Acompanhamento de Estudos** - Registre estudos individuais e em grupo
@@ -26,8 +26,8 @@ Sistema de gestão de repertório para regionais musicais.
 |--------|-------------|
 | **Backend** | Bun + Hono + TypeScript + SQLite |
 | **Frontend** | Vue 3 + Tailwind CSS v4 + TypeScript |
-| **Web Scraping** | Playwright (container separado) |
-| **Infra** | Docker Compose (3 containers) |
+| **Web Scraping** | Busca no Acervo Casa do Choro |
+| **Infra** | Docker Compose (2 containers) |
 
 ## 📦 Como Rodar
 
@@ -45,7 +45,7 @@ cp .env.example .env
 **Acesso:**
 - Frontend: http://localhost:7000
 - Domínio: https://meureg.mateusfonseca.me
-- Backend e Scraper: rede interna (não expostos)
+- Backend: rede interna (não exposto)
 
 **Comandos disponíveis:**
 ```bash
@@ -73,12 +73,6 @@ cp .env.example .env
 ┌─────────────────────────────────────────┐
 │   Backend (Hono/Bun)                    │
 │   port 3000 (interno)                   │
-└─────────────────┬───────────────────────┘
-                  │ HTTP (rede interna)
-                  ▼
-┌─────────────────────────────────────────┐
-│   Scraper (Playwright)                  │
-│   port 4000 (interno)                   │
 └─────────────────────────────────────────┘
 ```
 
@@ -88,7 +82,7 @@ cp .env.example .env
 # Backend
 cd back
 bun install
-cp .env.example .env  # Configure SPOTIFY_EMAIL e SPOTIFY_PASSWORD
+cp .env.example .env
 bun run migrate       # Rodar migrações do banco
 bun run dev           # http://localhost:3000
 
@@ -117,7 +111,7 @@ cd meu-regional
 
 # Configurar variáveis de ambiente
 cp .env.example .env
-# Editar .env com JWT_SECRET e credenciais Spotify
+# Editar .env com JWT_SECRET
 
 # Rodar deploy
 ./deploy.sh deploy
@@ -138,7 +132,7 @@ meu-regional/
 ├── back/                       # Backend
 │   ├── src/
 │   │   ├── routes/             # Rotas da API
-│   │   ├── services/           # Lógica de negócio (scraper)
+│   │   ├── services/           # Lógica de negócio
 │   │   ├── migrations/         # Migrações do banco
 │   │   ├── db-provider.ts      # Database provider
 │   │   ├── migration-runner.ts # Runner de migrações
@@ -155,7 +149,6 @@ meu-regional/
 │   ├── README.md               # Docs do frontend
 │   └── Dockerfile
 ├── docs/
-│   └── spotify-scraping.md     # Docs do scraping
 ├── deploy.sh                   # Script de deploy
 ├── docker-compose.yml
 ├── .env.example
@@ -178,8 +171,6 @@ meu-regional/
 | GET | `/api/repertoire/regional/:id` | Listar repertório |
 | POST | `/api/repertoire` | Criar item |
 | POST | `/api/repertoire/import` | Importar lista |
-| POST | `/api/scraper/spotify/search` | Buscar no Spotify |
-| POST | `/api/scraper/spotify/metadata` | Extrair metadata de URL |
 
 ### Seleções
 | Método | Endpoint | Descrição |
@@ -205,12 +196,11 @@ Veja todos os endpoints em [back/README.md](back/README.md)
 - Primeiro membro é cadastrado junto com o regional
 - Cada membro tem username, senha e instrumento
 
-### 2. Repertório com Spotify
+### 2. Repertório com Busca no Acervo
 
 - **Importar lista**: Cole uma lista de músicas (uma por linha)
-- **Buscar no Spotify**: Auto-complete com metadados reais
-- **Extrair de URL**: Cole URL do Spotify e preencha automaticamente
-- **Metadados**: Nome, autor, álbum, ano
+- **Buscar no Acervo Casa do Choro**: Pesquise por nome e preencha automaticamente
+- **Metadados**: Nome, autor, gênero
 
 ### 3. Seleções e Votação
 
@@ -225,23 +215,6 @@ Veja todos os endpoints em [back/README.md](back/README.md)
 - Adicione duração e notas
 - Veja estatísticas e histórico
 - Acompanhe músicas mais estudadas
-
-## ⚙️ Configuração do Spotify Scraper
-
-Para usar o preenchimento automático de metadados:
-
-1. Edite `back/.env`:
-   ```env
-   SPOTIFY_EMAIL=seu-email@exemplo.com
-   SPOTIFY_PASSWORD=sua-senha-aqui
-   ```
-
-2. Reinicie o backend:
-   ```bash
-   docker-compose restart backend
-   ```
-
-Veja mais em [docs/spotify-scraping.md](docs/spotify-scraping.md)
 
 ## 🗄️ Banco de Dados
 
@@ -266,7 +239,7 @@ bun run migrate:rollback
 - `selections` - Seleções/setlists
 - `selection_votes` - Votos dos membros
 - `study_logs` - Registro de estudos
-- `scraper_cache` - Cache do Spotify
+- `scraper_cache` - Cache de scraping
 
 ## 📱 Mobile First
 
@@ -302,7 +275,7 @@ bun test
 ### Fase 2: Repertório ✅
 - [x] CRUD de repertório
 - [x] Importação de listas (parsing de texto)
-- [x] Web scraping Spotify com Playwright
+- [x] Busca no Acervo Casa do Choro para preenchimento automático
 
 ### Fase 3: Seleções e Votação ✅
 - [x] CRUD de seleções
@@ -329,7 +302,6 @@ bun test
 
 - [Backend README](back/README.md) - Detalhes do backend
 - [Frontend README](app/README.md) - Detalhes do frontend
-- [Spotify Scraping](docs/spotify-scraping.md) - Guia do scraping
 
 ## 🔧 Desenvolvimento
 
@@ -349,9 +321,6 @@ bun run migrate
 ```env
 JWT_SECRET=sua-chave-secreta
 DATABASE_PATH=/app/data/meu-regional.db
-SPOTIFY_EMAIL=email@exemplo.com
-SPOTIFY_PASSWORD=senha
-SCRAPER_HEADLESS=true
 ```
 
 **Frontend (.env):**
@@ -364,10 +333,6 @@ VITE_API_URL=http://localhost:3000
 JWT_SECRET=chave-secreta-forte  # Gerar com: openssl rand -base64 32
 DATABASE_PATH=/app/data/meu-regional.db
 NODE_ENV=production
-SCRAPER_API_URL=http://scraper:4000
-SPOTIFY_EMAIL=seu-email@exemplo.com
-SPOTIFY_PASSWORD=sua-senha
-SCRAPER_HEADLESS=true
 ```
 
 ## 📝 Licença

@@ -86,8 +86,7 @@ app/
 │   │   ├── useSelections.ts
 │   │   └── useStudyLogs.ts
 │   ├── services/         # API clients
-│   │   ├── api.ts
-│   │   └── scraper.ts
+│   │   └── api.ts
 │   ├── router/           # Configuração de rotas
 │   │   └── index.ts
 │   ├── components/       # Componentes reutilizáveis (opcional)
@@ -113,7 +112,6 @@ Os composables são funções que encapsulam lógica reutilizável usando a Comp
 | `useRepertoire()` | Gerenciamento de repertório |
 | `useSelections()` | Criação e votação em seleções |
 | `useStudyLogs()` | Registro e acompanhamento de estudos |
-| `useScraper()` | Integração com Spotify scraper |
 
 ### Views
 
@@ -140,28 +138,13 @@ const response = await api.get('/repertoire/regional/1')
 const data = await api.post('/repertoire', { nome: 'Brasileirinho' })
 ```
 
-### Scraper do Spotify
-
-```typescript
-import { useScraper } from './services/scraper'
-
-const { search, getMetadataByUrl } = useScraper()
-
-// Buscar músicas
-const results = await search('Brasileirinho')
-
-// Extrair metadata de URL
-const metadata = await getMetadataByUrl('https://open.spotify.com/track/...')
-```
-
 ## 🎯 Funcionalidades
 
 ### Repertório
 
 - **Listar músicas**: Visualiza todas as músicas do regional
 - **Adicionar manualmente**: Adiciona uma música por vez
-- **Buscar no Spotify**: Auto-complete com dados do Spotify
-- **Extrair de URL**: Preenche automaticamente com URL do Spotify
+- **Buscar no Acervo Casa do Choro**: Preenche automaticamente com dados do acervo
 - **Importar lista**: Importa múltiplas músicas de uma vez (parsing de texto)
 - **Editar/Excluir**: Gerencia músicas existentes
 

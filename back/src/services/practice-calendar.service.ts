@@ -22,22 +22,20 @@ export interface CalendarMonthData {
 }
 
 export class PracticeCalendarService {
-  private db: any;
-
-  constructor() {
-    this.db = getDb();
-  }
+  constructor() {}
 
   /**
    * Busca dados do calendário de práticas para um mês específico
    * Retorna dias com estudos individuais e em grupo
    */
   async getCalendarData(memberId: number, year: number, month: number): Promise<CalendarMonthData> {
+    const db = getDb();
+
     // Primeiros e últimos dias do mês
     const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
 
     // Último dia do mês
-    const lastDayQuery = this.db
+    const lastDayQuery = db
       .prepare("SELECT date(?, '+1 month', '-1 day') as last_day")
       .get(firstDay) as { last_day: string };
 
@@ -45,7 +43,7 @@ export class PracticeCalendarService {
     const lastDayNum = parseInt(lastDay.split('-')[2]);
 
     // Buscar dias com práticas (individual e grupo) no mês
-    const practicesQuery = this.db
+    const practicesQuery = db
       .prepare(`
         SELECT
           CAST(strftime('%d', data) AS INTEGER) as day,
@@ -97,7 +95,9 @@ export class PracticeCalendarService {
    * Retorna todas as práticas (individual e grupo) da data
    */
   async getPracticesByDate(memberId: number, date: string) {
-    const practices = this.db
+    const db = getDb();
+
+    const practices = db
       .prepare(`
         SELECT 
           sl.*,

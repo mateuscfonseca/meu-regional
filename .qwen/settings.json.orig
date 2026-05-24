@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Agent(Explore)"
+      "Agent(Explore)",
+      "Skill(systematic-debugging)",
+      "WebFetch(acervo.casadochoro.com.br)"
     ]
   },
   "$version": 4

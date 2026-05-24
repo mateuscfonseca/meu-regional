@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Agent(Explore)",
-      "Skill(systematic-debugging)"
+      "Skill(systematic-debugging)",
+      "WebFetch(acervo.casadochoro.com.br)",
+      "Skill(writing-plans)"
     ]
   },
   "$version": 4
