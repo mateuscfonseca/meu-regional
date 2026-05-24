@@ -12,7 +12,7 @@ import { selectionsRoutes } from './routes/selections';
 import { studyLogsRoutes } from './routes/studyLogs';
 import { practiceGroupRoutes } from './routes/practice-group';
 import { practiceCalendarRoutes } from './routes/practice-calendar';
-import { scraperRoutes } from './routes/scraper';
+import { casaDoChoroRoutes } from './routes/casa-do-choro';
 import { authorsRoutes } from './routes/authors';
 
 // Inicializa e aplica migrations automaticamente
@@ -55,7 +55,7 @@ app.route('/api/selections', selectionsRoutes);
 app.route('/api/study-logs', studyLogsRoutes);
 app.route('/api/practice-group', practiceGroupRoutes);
 app.route('/api/practice-calendar', practiceCalendarRoutes);
-app.route('/api/scraper', scraperRoutes);
+app.route('/api/scraper/casa-do-choro', casaDoChoroRoutes);
 app.route('/api/authors', authorsRoutes);
 
 // Health check

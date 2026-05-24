@@ -7,7 +7,6 @@ Backend da aplicação Meu Regional, um sistema de gestão de repertório para r
 - **Runtime**: [Bun](https://bun.sh/) (JavaScript/TypeScript runtime)
 - **Framework**: [Hono](https://hono.dev/) (Web framework leve e rápido)
 - **Banco de Dados**: SQLite com [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
-- **Web Scraping**: [Playwright](https://playwright.dev/) (Automação de browser)
 - **Validação**: [Zod](https://zod.dev/) (TypeScript-first schema validation)
 - **Autenticação**: JWT (JSON Web Tokens)
 
@@ -41,11 +40,6 @@ DATABASE_PATH=/app/data/meu-regional.db
 
 # Ambiente
 NODE_ENV=development
-
-# Spotify Scraper (opcional)
-SPOTIFY_EMAIL=seu-email@exemplo.com
-SPOTIFY_PASSWORD=sua-senha-aqui
-SCRAPER_HEADLESS=true
 ```
 
 ## 🏃 Como Rodar
@@ -102,7 +96,7 @@ bun run migrate:list
 - `selection_results` - Resultados finalizados das seleções
 - `study_logs` - Registro de estudos das músicas
 - `migrations` - Controle de migrações aplicadas
-- `scraper_cache` - Cache das requisições de scraping
+- `scraper_cache` - Cache de scraping
 
 ## 📡 API Endpoints
 
@@ -166,57 +160,6 @@ bun run migrate:list
 | GET | `/api/study-logs/repertoire/:id` | Estudos de uma música |
 | POST | `/api/study-logs` | Registrar estudo |
 
-### Scraper (Spotify)
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/api/scraper/health` | Health check do scraper |
-| POST | `/api/scraper/spotify/search` | Buscar músicas por query |
-| POST | `/api/scraper/spotify/search-first` | Buscar primeiro resultado |
-| POST | `/api/scraper/spotify/metadata` | Extrair metadata de URL |
-| POST | `/api/scraper/cache/clear` | Limpar cache |
-| GET | `/api/scraper/cache/status` | Status do cache |
-
-## 🔍 Web Scraping (Spotify)
-
-O sistema utiliza Playwright para fazer web scraping do Spotify e extrair metadados de músicas automaticamente.
-
-### Configuração
-
-1. Configure as credenciais no `.env`:
-   ```env
-   SPOTIFY_EMAIL=seu-email@exemplo.com
-   SPOTIFY_PASSWORD=sua-senha-aqui
-   ```
-
-2. O sistema fará login automático no Spotify e extrairá:
-   - Nome da música
-   - Nome do artista/autor
-   - Álbum
-   - Ano de lançamento
-
-### Funcionamento
-
-- **Cache**: Resultados são cacheados por 24 horas para evitar requisições repetidas
-- **Headless**: Em produção, o browser roda em modo headless (sem interface)
-- **Rate Limiting**: O sistema evita requisições excessivas
-
-### Exemplo de Uso
-
-```bash
-# Buscar músicas
-curl -X POST http://localhost:3000/api/scraper/spotify/search \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Brasileirinho"}'
-
-# Extrair metadata de URL
-curl -X POST http://localhost:3000/api/scraper/spotify/metadata \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://open.spotify.com/track/..."}'
-```
-
-Veja mais detalhes em [docs/spotify-scraping.md](../docs/spotify-scraping.md)
-
 ## 📁 Estrutura de Pastas
 
 ```
@@ -228,11 +171,7 @@ back/
 │   │   ├── regionais.ts
 │   │   ├── repertoire.ts
 │   │   ├── selections.ts
-│   │   ├── studyLogs.ts
-│   │   └── scraper.ts
-│   ├── services/         # Lógica de negócio
-│   │   ├── scraper.service.ts
-│   │   └── spotify-scraper.service.ts
+│   │   └── studyLogs.ts
 │   ├── migrations/       # Migrações do banco
 │   │   └── 001-initial-schema.ts
 │   ├── db-provider.ts    # Provedor do banco de dados
