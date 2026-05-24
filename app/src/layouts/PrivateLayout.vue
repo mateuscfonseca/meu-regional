@@ -126,12 +126,14 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { useStudyLogs } from '../composables/useStudyLogs'
+import { usePracticeCalendar } from '../composables/usePracticeCalendar'
 import StudyLogModal from '../components/base/StudyLogModal.vue'
 
 const router = useRouter()
 const route = useRoute()
 const { state, logout } = useAuth()
 const { logStudy } = useStudyLogs()
+const { loadCalendar } = usePracticeCalendar()
 
 const user = state.user
 const sidebarOpen = ref(false)
@@ -153,6 +155,12 @@ async function handleLogStudy(data: {
   try {
     await logStudy(data)
     showStudyModal.value = false
+
+    // Atualizar calendário após registrar estudo
+    if (state.user?.id) {
+      const hoje = new Date()
+      loadCalendar(state.user.id, hoje.getFullYear(), hoje.getMonth() + 1)
+    }
   } catch (err: any) {
     console.error('Erro ao registrar estudo:', err)
     alert(err.response?.data?.error || 'Erro ao registrar estudo')
